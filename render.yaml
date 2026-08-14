@@ -1,10 +1,9 @@
 services:
   - type: web
     name: nforcehq-backend
-    env: java
+    env: docker
     plan: free
-    buildCommand: ./mvnw clean package -DskipTests
-    startCommand: java -jar target/nforcehq-0.0.1-SNAPSHOT.jar
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /actuator/health
     envVars:
       - key: DB_URL
