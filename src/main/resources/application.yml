@@ -1,0 +1,63 @@
+spring:
+  application:
+    name: nforcehq
+
+  # Runtime pool used by the app itself (JPA/Hibernate). Must be a role WITHOUT the
+  # BYPASSRLS attribute — Supabase's default "postgres" role has BYPASSRLS, which
+  # silently defeats every Row-Level Security policy regardless of how they're
+  # written. A separate restricted role (see nforcehq_app in the ops notes) is
+  # required for tenant isolation to actually mean anything.
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/postgres?sslmode=require}
+    username: ${DB_USER:nforcehq_app}
+    password: ${DB_PASSWORD:nforcehq_app}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
+      connection-timeout: 10000
+      max-lifetime: 1500000
+      idle-timeout: 300000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+
+  # Flyway needs an elevated/owning role (DDL, CREATE POLICY, etc.), so it deliberately
+  # runs through its own connection rather than the app's restricted runtime pool above.
+  # Defaults to the same connection as spring.datasource if no override is given, which
+  # only works for a superuser/owner role — override FLYWAY_DB_USER/PASSWORD for Supabase.
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: true
+    url: ${FLYWAY_DB_URL:${DB_URL:jdbc:postgresql://localhost:5432/postgres?sslmode=require}}
+    user: ${FLYWAY_DB_USER:${DB_USER:postgres}}
+    password: ${FLYWAY_DB_PASSWORD:${DB_PASSWORD:postgres}}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+jwt:
+  secret: ${JWT_SECRET:dev-only-secret-change-me-please-32bytes-min}
+  expiration-minutes: 720
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+  api-docs:
+    path: /v3/api-docs
+
+server:
+  port: ${PORT:8080}

@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>nForceHQ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F5F6F8;
+    --surface:#FFFFFF;
+    --surface-alt:#FAFBFC;
+    --ink:#131720;
+    --ink-soft:#59626F;
+    --ink-faint:#8A93A1;
+    --border:#E2E5EA;
+    --border-strong:#D2D6DD;
+    --brand:#2B5B87;
+    --brand-soft:#E8F0F6;
+    --brand-ink:#1E4463;
+    --moss:#1E8A5C;
+    --moss-soft:#E6F5EE;
+    --amber:#B9781A;
+    --amber-soft:#FBF0DE;
+    --clay:#C0453B;
+    --clay-soft:#FBEAE8;
+    --violet:#6E5AA8;
+    --violet-soft:#EEEAF7;
+    --radius:10px;
+    --radius-sm:6px;
+    --font-display:'Space Grotesk', sans-serif;
+    --font-body:'Inter', sans-serif;
+    --font-mono:'IBM Plex Mono', monospace;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:var(--font-body);
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    display:flex;
+    min-height:100vh;
+    font-size:14px;
+  }
+  a{color:inherit; text-decoration:none;}
+  button{font-family:inherit; cursor:pointer; background:none; border:none;}
+  ul{list-style:none;}
+
+  /* ---------- Sidebar ---------- */
+  .sidebar{
+    width:230px; flex-shrink:0;
+    background:var(--surface);
+    border-right:1px solid var(--border);
+    display:flex; flex-direction:column;
+    padding:22px 14px;
+    position:sticky; top:0; height:100vh;
+  }
+  .brand{display:flex; align-items:center; gap:10px; padding:0 8px 24px 8px;}
+  .brand-mark{width:30px; height:30px; border-radius:8px; background:var(--ink); position:relative; flex-shrink:0;}
+  .brand-mark::before{content:""; position:absolute; left:6px; top:9px; width:18px; height:3px; background:var(--surface); border-radius:2px;}
+  .brand-mark::after{content:""; position:absolute; left:6px; top:16px; width:11px; height:3px; background:var(--moss); border-radius:2px;}
+  .brand-name{font-family:var(--font-display); font-weight:700; font-size:16.5px; letter-spacing:-0.01em;}
+  .brand-name span{color:var(--brand);}
+
+  .nav-group-label{font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--ink-faint); font-weight:600; padding:14px 12px 6px 12px;}
+  .nav-item{display:flex; align-items:center; gap:11px; padding:9px 12px; border-radius:var(--radius-sm); color:var(--ink-soft); font-weight:500; font-size:13.5px; margin-bottom:2px; width:100%; text-align:left;}
+  .nav-item svg{width:17px; height:17px; flex-shrink:0;}
+  .nav-item:hover{background:var(--surface-alt); color:var(--ink);}
+  .nav-item.active{background:var(--brand-soft); color:var(--brand-ink); font-weight:600;}
+  .nav-badge{margin-left:auto; background:var(--clay); color:#fff; font-size:10.5px; font-weight:700; line-height:1; padding:3px 6px; border-radius:20px; font-family:var(--font-mono);}
+  .sidebar-footer{margin-top:auto; padding:12px 8px 4px 8px; border-top:1px solid var(--border);}
+  .role-pill{display:inline-flex; align-items:center; gap:6px; font-size:11px; color:var(--ink-faint); padding-top:10px; font-family:var(--font-mono);}
+  .role-dot{width:6px; height:6px; border-radius:50%; background:var(--moss);}
+
+  /* ---------- Main ---------- */
+  .main{flex:1; min-width:0; display:flex; flex-direction:column;}
+  .topbar{height:64px; background:var(--surface); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 28px; gap:20px; position:sticky; top:0; z-index:5;}
+  .org-switch{display:flex; align-items:center; gap:8px; font-weight:600; font-size:13.5px; padding:6px 10px 6px 6px; border-radius:var(--radius-sm); border:1px solid var(--border);}
+  .org-switch .avatar-sq{width:22px; height:22px; border-radius:5px; background:var(--brand); flex-shrink:0;}
+  .search-box{flex:1; max-width:380px; display:flex; align-items:center; gap:8px; background:var(--surface-alt); border:1px solid var(--border); border-radius:var(--radius-sm); padding:8px 12px; color:var(--ink-faint); font-size:13px;}
+  .search-box svg{width:15px; height:15px; flex-shrink:0;}
+  .topbar-right{margin-left:auto; display:flex; align-items:center; gap:18px;}
+  .mini-clock{font-family:var(--font-mono); font-size:13px; color:var(--ink-soft); display:flex; align-items:center; gap:8px;}
+  .mini-clock .dot{width:6px; height:6px; border-radius:50%; background:var(--moss); box-shadow:0 0 0 3px var(--moss-soft);}
+  .icon-btn{width:34px; height:34px; display:flex; align-items:center; justify-content:center; border-radius:var(--radius-sm); color:var(--ink-soft); position:relative;}
+  .icon-btn:hover{background:var(--surface-alt);}
+  .icon-btn svg{width:17px; height:17px;}
+  .ping{position:absolute; top:6px; right:6px; width:7px; height:7px; border-radius:50%; background:var(--clay); border:1.5px solid var(--surface);}
+  .user-chip{display:flex; align-items:center; gap:9px; padding-left:14px; border-left:1px solid var(--border);}
+  .avatar-circle{width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, var(--brand), #4A7FA8); color:#fff; display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-weight:600; font-size:12.5px; flex-shrink:0;}
+  .user-meta{line-height:1.25;}
+  .user-meta .name{font-weight:600; font-size:13px;}
+  .user-meta .role{font-size:11.5px; color:var(--ink-faint);}
+
+  .content{padding:28px 32px 60px 32px; max-width:1280px;}
+  .page-head{display:flex; align-items:baseline; justify-content:space-between; margin-bottom:22px; flex-wrap:wrap; gap:10px;}
+  .page-head h1{font-family:var(--font-display); font-size:23px; font-weight:700; letter-spacing:-0.01em;}
+  .page-head .date{color:var(--ink-faint); font-size:13px; font-family:var(--font-mono);}
+  .page-tabs{display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--border);}
+  .page-tab{padding:9px 4px; margin-right:20px; font-size:13.5px; font-weight:600; color:var(--ink-faint); border-bottom:2px solid transparent; position:relative; top:1px;}
+  .page-tab.active{color:var(--ink); border-bottom-color:var(--brand);}
+  .page-tab:hover{color:var(--ink);}
+
+  .section{display:none;}
+  .section.active{display:block;}
+
+  /* ---------- Hero: shift rail ---------- */
+  .hero{background:var(--ink); border-radius:14px; padding:26px 28px 24px 28px; color:#fff; margin-bottom:22px; position:relative; overflow:hidden;}
+  .hero::before{content:""; position:absolute; top:-60px; right:-60px; width:220px; height:220px; border-radius:50%; background:radial-gradient(circle, rgba(43,91,135,0.55), transparent 70%);}
+  .hero-top{display:flex; justify-content:space-between; align-items:flex-start; gap:24px; position:relative; z-index:1; flex-wrap:wrap;}
+  .hero-eyebrow{font-size:11px; text-transform:uppercase; letter-spacing:.09em; color:#9FB4C7; font-weight:600; margin-bottom:6px;}
+  .hero-name{font-family:var(--font-display); font-size:21px; font-weight:600;}
+  .hero-sub{color:#B7C2CE; font-size:13px; margin-top:3px;}
+  .hero-clock{text-align:right;}
+  .hero-clock .time{font-family:var(--font-mono); font-size:30px; font-weight:500; letter-spacing:-0.01em;}
+  .hero-clock .elapsed{font-size:12px; color:#9FB4C7; margin-top:2px; font-family:var(--font-mono);}
+  .clock-btn{margin-top:12px; background:var(--moss); color:#fff; border:none; padding:9px 18px; border-radius:8px; font-weight:600; font-size:13px; display:inline-flex; align-items:center; gap:8px; transition:filter .15s;}
+  .clock-btn:hover{filter:brightness(1.08);}
+  .clock-btn.out{background:var(--clay);}
+  .clock-btn svg{width:14px; height:14px;}
+  .shift-rail-wrap{margin-top:22px; position:relative; z-index:1;}
+  .shift-rail-labels{display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:10.5px; color:#7E8FA0; margin-bottom:6px;}
+  .shift-rail{height:26px; border-radius:7px; background:rgba(255,255,255,0.06); display:flex; overflow:hidden; position:relative; border:1px solid rgba(255,255,255,0.08);}
+  .rail-seg{height:100%;}
+  .rail-seg.office{background:var(--brand);}
+  .rail-seg.wfh{background:#4F8FA8;}
+  .rail-seg.break{background:var(--amber);}
+  .rail-seg.pending{background:rgba(255,255,255,0.04);}
+  .rail-now{position:absolute; top:-4px; width:2px; height:34px; background:#fff;}
+  .rail-now::before{content:"NOW"; position:absolute; top:-16px; left:50%; transform:translateX(-50%); font-size:9px; font-family:var(--font-mono); color:#fff; letter-spacing:.05em;}
+  .rail-legend{display:flex; gap:16px; margin-top:10px; font-size:11.5px; color:#B7C2CE; flex-wrap:wrap;}
+  .rail-legend div{display:flex; align-items:center; gap:6px;}
+  .rail-legend span{width:9px; height:9px; border-radius:2px; display:inline-block;}
+
+  /* ---------- Quick actions ---------- */
+  .quick-actions{display:flex; gap:10px; margin-bottom:22px; flex-wrap:wrap;}
+  .qa-btn{display:flex; align-items:center; gap:9px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:11px 16px; font-size:13px; font-weight:600; color:var(--ink); flex:1; min-width:150px;}
+  .qa-btn:hover{border-color:var(--border-strong); background:var(--surface-alt);}
+  .qa-btn .qa-ic{width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+  .qa-btn .qa-ic svg{width:15px; height:15px;}
+  .qa-ic.blue{background:var(--brand-soft); color:var(--brand-ink);}
+  .qa-ic.violet{background:var(--violet-soft); color:var(--violet);}
+  .qa-ic.amber{background:var(--amber-soft); color:var(--amber);}
+  .qa-ic.green{background:var(--moss-soft); color:var(--moss);}
+
+  /* ---------- Stats row ---------- */
+  .stats-row{display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin-bottom:22px;}
+  .stat-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px;}
+  .stat-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;}
+  .stat-label{font-size:12px; color:var(--ink-soft); font-weight:600;}
+  .stat-icon{width:26px; height:26px; border-radius:6px; display:flex; align-items:center; justify-content:center;}
+  .stat-icon svg{width:14px; height:14px;}
+  .stat-icon.blue{background:var(--brand-soft); color:var(--brand-ink);}
+  .stat-icon.green{background:var(--moss-soft); color:var(--moss);}
+  .stat-icon.amber{background:var(--amber-soft); color:var(--amber);}
+  .stat-icon.red{background:var(--clay-soft); color:var(--clay);}
+  .stat-value{font-family:var(--font-display); font-size:26px; font-weight:700; letter-spacing:-0.01em;}
+  .stat-value small{font-family:var(--font-body); font-size:13px; color:var(--ink-faint); font-weight:500;}
+  .stat-delta{font-size:11.5px; color:var(--ink-faint); margin-top:5px; font-family:var(--font-mono);}
+  .stat-delta.up{color:var(--moss);}
+  .stat-delta.down{color:var(--clay);}
+
+  /* ---------- Two column layout ---------- */
+  .grid-2col{display:grid; grid-template-columns:1.55fr 1fr; gap:16px; align-items:start;}
+  .panel{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;}
+  .panel-head{display:flex; align-items:center; justify-content:space-between; padding:16px 18px; border-bottom:1px solid var(--border);}
+  .panel-head h2{font-family:var(--font-display); font-size:15px; font-weight:600;}
+  .panel-head .see-all{font-size:12.5px; color:var(--brand); font-weight:600;}
+
+  .team-row{display:flex; align-items:center; gap:12px; padding:12px 18px; border-bottom:1px solid var(--border);}
+  .team-row:last-child{border-bottom:none;}
+  .team-row .avatar-circle{width:30px; height:30px; font-size:11px;}
+  .team-meta{flex:1; min-width:0;}
+  .team-meta .name{font-weight:600; font-size:13px;}
+  .team-meta .role{font-size:11.5px; color:var(--ink-faint);}
+  .status-dot{width:7px; height:7px; border-radius:50%; flex-shrink:0;}
+  .status-dot.in{background:var(--moss);}
+  .status-dot.wfh{background:#4F8FA8;}
+  .status-dot.break{background:var(--amber);}
+  .status-dot.out{background:var(--ink-faint);}
+  .status-text{font-size:12px; color:var(--ink-soft); display:flex; align-items:center; gap:6px; width:112px; flex-shrink:0;}
+  .team-time{font-family:var(--font-mono); font-size:12px; color:var(--ink-faint); width:64px; text-align:right; flex-shrink:0;}
+
+  .attn-item{padding:13px 18px; border-bottom:1px solid var(--border); display:flex; gap:11px; align-items:flex-start;}
+  .attn-item:last-child{border-bottom:none;}
+  .attn-badge{width:28px; height:28px; border-radius:7px; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px;}
+  .attn-badge svg{width:14px; height:14px;}
+  .attn-badge.amber{background:var(--amber-soft); color:var(--amber);}
+  .attn-badge.red{background:var(--clay-soft); color:var(--clay);}
+  .attn-body{flex:1; min-width:0;}
+  .attn-title{font-size:13px; font-weight:600; line-height:1.3;}
+  .attn-sub{font-size:12px; color:var(--ink-faint); margin-top:2px;}
+  .attn-actions{display:flex; gap:6px; margin-top:8px;}
+  .btn-mini{font-size:11.5px; font-weight:600; padding:5px 10px; border-radius:6px; border:1px solid var(--border-strong); color:var(--ink-soft);}
+  .btn-mini:hover{background:var(--surface-alt);}
+  .btn-mini.primary{background:var(--ink); color:#fff; border-color:var(--ink);}
+
+  .leave-strip{padding:14px 18px; display:flex; gap:10px; flex-wrap:wrap;}
+  .leave-chip{display:flex; align-items:center; gap:8px; background:var(--surface-alt); border:1px solid var(--border); border-radius:20px; padding:5px 11px 5px 5px; font-size:12px;}
+  .leave-chip .avatar-circle{width:22px; height:22px; font-size:9.5px;}
+  .leave-chip b{font-weight:600;}
+  .leave-chip .when{color:var(--ink-faint); font-family:var(--font-mono); font-size:11px;}
+
+  /* ---------- To-do widget (Keka-style super-inbox) ---------- */
+  .todo-row{display:flex; align-items:center; gap:11px; padding:11px 18px; border-bottom:1px solid var(--border);}
+  .todo-row:last-child{border-bottom:none;}
+  .todo-check{width:17px; height:17px; border-radius:5px; border:1.5px solid var(--border-strong); flex-shrink:0;}
+  .todo-text{flex:1; font-size:12.5px;}
+  .todo-text b{font-weight:600;}
+  .todo-tag{font-size:10.5px; font-family:var(--font-mono); color:var(--ink-faint); background:var(--surface-alt); border:1px solid var(--border); padding:2px 7px; border-radius:20px; flex-shrink:0;}
+
+  /* ---------- Announcement carousel strip ---------- */
+  .announce{display:flex; gap:12px; padding:14px 18px; overflow-x:auto;}
+  .announce-card{min-width:220px; background:var(--surface-alt); border:1px solid var(--border); border-radius:8px; padding:12px 14px; flex-shrink:0;}
+  .announce-card .tag{font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--violet); margin-bottom:5px;}
+  .announce-card .title{font-size:12.5px; font-weight:600; line-height:1.3; margin-bottom:3px;}
+  .announce-card .sub{font-size:11px; color:var(--ink-faint);}
+
+  /* ===================== ATTENDANCE SECTION ===================== */
+  .attendance-toolbar{display:flex; align-items:center; gap:10px; margin-bottom:18px; flex-wrap:wrap;}
+  .seg-control{display:flex; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:3px;}
+  .seg-btn{padding:6px 13px; font-size:12.5px; font-weight:600; color:var(--ink-soft); border-radius:6px;}
+  .seg-btn.active{background:var(--ink); color:#fff;}
+  .filter-select{background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 12px; font-size:12.5px; font-weight:500; color:var(--ink-soft); margin-left:auto;}
+
+  .attn-summary-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:18px;}
+  .donut-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:18px; display:flex; align-items:center; gap:16px;}
+  .donut{width:76px; height:76px; border-radius:50%; flex-shrink:0; background:conic-gradient(var(--brand) 0% 62%, #4F8FA8 62% 80%, var(--amber) 80% 88%, var(--border) 88% 100%); position:relative;}
+  .donut::after{content:""; position:absolute; inset:12px; border-radius:50%; background:var(--surface);}
+  .donut-legend{font-size:12px;}
+  .donut-legend div{display:flex; align-items:center; gap:7px; margin-bottom:5px;}
+  .donut-legend span{width:8px; height:8px; border-radius:2px; flex-shrink:0;}
+  .donut-legend b{font-family:var(--font-mono); margin-left:auto; padding-left:10px;}
+
+  .heatmap-panel{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:18px;}
+  .heatmap-title{font-family:var(--font-display); font-size:15px; font-weight:600; margin-bottom:14px;}
+  .heatmap-grid{display:grid; grid-template-columns:repeat(31, 1fr); gap:4px;}
+  .hm-cell{aspect-ratio:1; border-radius:3px; background:var(--border);}
+  .hm-cell.full{background:var(--moss);}
+  .hm-cell.wfh{background:#4F8FA8;}
+  .hm-cell.partial{background:var(--amber);}
+  .hm-cell.leave{background:var(--violet-soft); border:1px solid var(--violet);}
+  .hm-cell.weekend{background:transparent;}
+  .heatmap-legend{display:flex; gap:16px; margin-top:12px; font-size:11px; color:var(--ink-faint); flex-wrap:wrap;}
+  .heatmap-legend div{display:flex; align-items:center; gap:6px;}
+  .heatmap-legend span{width:9px; height:9px; border-radius:2px;}
+
+  table.data-table{width:100%; border-collapse:collapse; font-size:12.5px;}
+  table.data-table th{text-align:left; padding:10px 18px; color:var(--ink-faint); font-weight:600; font-size:11px; text-transform:uppercase; letter-spacing:.04em; border-bottom:1px solid var(--border);}
+  table.data-table td{padding:11px 18px; border-bottom:1px solid var(--border);}
+  table.data-table tr:last-child td{border-bottom:none;}
+  .pill{display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600; padding:3px 9px; border-radius:20px;}
+  .pill.green{background:var(--moss-soft); color:var(--moss);}
+  .pill.blue{background:var(--brand-soft); color:var(--brand-ink);}
+  .pill.amber{background:var(--amber-soft); color:var(--amber);}
+  .pill.red{background:var(--clay-soft); color:var(--clay);}
+  .mono{font-family:var(--font-mono); color:var(--ink-soft);}
+
+  /* ===================== LEAVE SECTION ===================== */
+  .leave-balance-row{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:18px;}
+  .lb-card{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px 18px;}
+  .lb-card .lb-top{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;}
+  .lb-card .lb-name{font-size:12.5px; font-weight:600;}
+  .lb-card .lb-dot{width:8px; height:8px; border-radius:2px;}
+  .lb-bar{height:6px; border-radius:4px; background:var(--border); overflow:hidden; margin-bottom:8px;}
+  .lb-bar-fill{height:100%; border-radius:4px;}
+  .lb-numbers{display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:11px; color:var(--ink-faint);}
+  .lb-numbers b{font-family:var(--font-display); font-size:18px; color:var(--ink); font-weight:700;}
+
+  .leave-apply-panel{background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin-bottom:18px;}
+  .form-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-bottom:12px;}
+  .form-field label{display:block; font-size:11.5px; font-weight:600; color:var(--ink-soft); margin-bottom:6px;}
+  .form-field select, .form-field input, .form-field textarea{
+    width:100%; padding:9px 11px; border:1px solid var(--border); border-radius:7px; font-size:13px; font-family:inherit; color:var(--ink); background:var(--surface-alt);
+  }
+  .form-field textarea{resize:vertical; min-height:60px;}
+  .btn-submit{background:var(--ink); color:#fff; padding:10px 20px; border-radius:8px; font-weight:600; font-size:13px; margin-top:4px;}
+  .btn-submit:hover{filter:brightness(1.15);}
+
+  .history-status{font-size:11.5px; font-weight:600;}
+  .history-status.approved{color:var(--moss);}
+  .history-status.pending{color:var(--amber);}
+  .history-status.rejected{color:var(--clay);}
+
+  @media (max-width: 980px){
+    .stats-row{grid-template-columns:repeat(2,1fr);}
+    .grid-2col{grid-template-columns:1fr;}
+    .attn-summary-grid{grid-template-columns:1fr;}
+    .leave-balance-row{grid-template-columns:repeat(2,1fr);}
+    .form-row{grid-template-columns:1fr;}
+  }
+
+  /* ---------- Login screen ---------- */
+  .login-screen{min-height:100vh; width:100%; display:flex; align-items:center; justify-content:center; background:var(--bg);}
+  .login-card{width:100%; max-width:360px; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:32px 28px; box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+  .login-brand{display:flex; align-items:center; gap:10px; margin-bottom:24px;}
+  .login-title{font-family:var(--font-display); font-size:15px; font-weight:600; color:var(--ink-soft); margin-bottom:20px;}
+  .login-error{display:none; background:var(--clay-soft); color:var(--clay); font-size:12.5px; font-weight:600; padding:9px 12px; border-radius:7px; margin-bottom:14px;}
+  .login-error.show{display:block;}
+  .org-select{background:transparent; border:none; font-family:inherit; font-weight:600; font-size:13.5px; color:var(--ink); cursor:pointer;}
+  .logout-link{font-size:11px; color:var(--ink-faint); font-weight:600; margin-left:auto; flex-shrink:0; padding-left:8px;}
+  .sidebar-footer .role-pill{min-width:0;}
+  .sidebar-footer .role-pill span:last-child{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .logout-link:hover{color:var(--clay);}
+</style>
+</head>
+<body>
+
+  <!-- ================= LOGIN ================= -->
+  <div class="login-screen" id="loginScreen">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="brand-mark"></div>
+        <div class="brand-name">nForce<span>HQ</span></div>
+      </div>
+      <div class="login-title">Sign in to your workspace</div>
+      <div class="login-error" id="loginError"></div>
+      <form id="loginForm">
+        <div class="form-row" style="grid-template-columns:1fr; margin-bottom:14px;">
+          <div class="form-field"><label>Email</label><input type="email" id="loginEmail" required autocomplete="username"></div>
+        </div>
+        <div class="form-row" style="grid-template-columns:1fr; margin-bottom:6px;">
+          <div class="form-field"><label>Password</label><input type="password" id="loginPassword" required autocomplete="current-password"></div>
+        </div>
+        <button type="submit" class="btn-submit" style="width:100%; text-align:center;" id="loginSubmit">Sign in</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ================= APP SHELL ================= -->
+  <div id="appShell" style="display:none;">
+
+  <!-- ================= SIDEBAR ================= -->
+  <nav class="sidebar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div class="brand-name">nForce<span>HQ</span></div>
+    </div>
+
+    <div class="nav-group-label">Workspace</div>
+    <button class="nav-item active" data-tab="overview">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>
+      Overview
+    </button>
+    <button class="nav-item" data-tab="attendance">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+      Attendance
+    </button>
+    <button class="nav-item" data-tab="leave">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+      Leave
+      <span class="nav-badge">3</span>
+    </button>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="6" r="2.5"/><circle cx="5" cy="18" r="2.5"/><circle cx="19" cy="18" r="2.5"/><path d="M12 8.5V13m0 0-5.5 3M12 13l5.5 3"/></svg>
+      Org Chart
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="18" cy="8" r="2.7"/><path d="M16.5 14.3c2.9.4 4.9 2.6 4.9 5.7"/></svg>
+      People
+    </a>
+
+    <div class="nav-group-label">Finance &amp; Ops</div>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg>
+      Payroll
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 3v18M15 3v18M4 8h5M15 8h5M4 16h5M15 16h5"/></svg>
+      Client Tracking
+      <span class="nav-badge">3</span>
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v12H7l-3 3V4Z"/></svg>
+      Chat
+    </a>
+
+    <div class="nav-group-label">Governance</div>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 4 6v6c0 4.5 3.2 7.7 8 9 4.8-1.3 8-4.5 8-9V6l-8-3Z"/></svg>
+      Admin
+    </a>
+    <a class="nav-item" href="#">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12h6M9 16h6M9 8h2M5 4h14v16H5z"/></svg>
+      Audit Log
+    </a>
+
+    <div class="sidebar-footer">
+      <div style="display:flex; align-items:center;">
+        <span class="role-pill"><span class="role-dot"></span> Signed in as <span id="rolePillText">…</span></span>
+        <a href="#" class="logout-link" id="logoutLink">Log out</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ================= MAIN ================= -->
+  <div class="main">
+
+    <header class="topbar">
+      <div class="org-switch" id="orgSwitch">
+        <div class="avatar-sq"></div>
+        <span id="orgName">…</span>
+      </div>
+      <div class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        Search people, requests, records…
+      </div>
+      <div class="topbar-right">
+        <div class="mini-clock"><span class="dot"></span><span id="miniClock">09:41:12 IST</span></div>
+        <button class="icon-btn" title="Notifications">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6"/><path d="M10 21a2 2 0 0 0 4 0"/></svg>
+          <span class="ping"></span>
+        </button>
+        <div class="user-chip">
+          <div class="avatar-circle" id="userAvatar">…</div>
+          <div class="user-meta">
+            <div class="name" id="userName">…</div>
+            <div class="role" id="userRole">…</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <!-- ============================================================ -->
+      <!-- OVERVIEW SECTION                                              -->
+      <!-- ============================================================ -->
+      <section class="section active" id="section-overview">
+        <div class="page-head">
+          <h1>Overview</h1>
+          <div class="date">Thursday, 13 Aug 2026</div>
+        </div>
+
+        <section class="hero">
+          <div class="hero-top">
+            <div>
+              <div class="hero-eyebrow">Your shift</div>
+              <div class="hero-name" id="heroName">…</div>
+              <div class="hero-sub" id="heroSub">Loading today's attendance…</div>
+            </div>
+            <div class="hero-clock">
+              <div class="time" id="heroClock">--:--:--</div>
+              <div class="elapsed" id="elapsedTime">—</div>
+              <button class="clock-btn" id="clockBtn" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+                <span id="clockBtnLabel">Clock in</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="shift-rail-wrap">
+            <div class="shift-rail-labels"><span>09:00</span><span>12:00</span><span>15:00</span><span>18:00</span><span>21:00</span></div>
+            <div class="shift-rail" id="shiftRail"></div>
+            <div class="rail-legend">
+              <div><span style="background:var(--brand)"></span>Office</div>
+              <div><span style="background:#4F8FA8"></span>Work from home</div>
+              <div><span style="background:var(--amber)"></span>Break</div>
+              <div><span style="background:rgba(255,255,255,0.15)"></span>Remaining shift</div>
+            </div>
+          </div>
+        </section>
+
+        <div class="quick-actions">
+          <button class="qa-btn" onclick="switchTab('leave')">
+            <div class="qa-ic violet"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg></div>
+            Apply for leave
+          </button>
+          <button class="qa-btn" onclick="switchTab('attendance')">
+            <div class="qa-ic amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/></svg></div>
+            Regularize attendance
+          </button>
+          <button class="qa-btn">
+            <div class="qa-ic blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M7 15h4"/></svg></div>
+            View payslip
+          </button>
+          <button class="qa-btn">
+            <div class="qa-ic green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/></svg></div>
+            Team directory
+          </button>
+        </div>
+
+        <section class="stats-row" id="overviewStatsRow">
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">Present today</span>
+              <div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div></div>
+            <div class="stat-value" id="statPresentToday">— <small>/ —</small></div>
+            <div class="stat-delta" id="statPresentDelta">&nbsp;</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">Pending approvals</span>
+              <div class="stat-icon amber"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div></div>
+            <div class="stat-value" id="statPendingApprovals">—</div>
+            <div class="stat-delta" id="statPendingBreakdown">&nbsp;</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">Mismatches flagged</span>
+              <div class="stat-icon red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 9 16H3l9-16Z"/><path d="M12 10v4M12 17h.01"/></svg></div></div>
+            <div class="stat-value" id="statMismatches">—</div>
+            <div class="stat-delta">&nbsp;</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">Avg hours this week</span>
+              <div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M7 15l4-5 3 3 5-7"/></svg></div></div>
+            <div class="stat-value" id="statAvgHours">—<small>h</small></div>
+            <div class="stat-delta">&nbsp;</div>
+          </div>
+        </section>
+
+        <section class="grid-2col">
+          <div>
+            <div class="panel" style="margin-bottom:16px;">
+              <div class="panel-head"><h2>Team today</h2><a class="see-all" href="#" onclick="switchTab('attendance');return false;">View attendance →</a></div>
+              <div id="teamTodayList">
+                <div class="team-row" style="color:var(--ink-faint);">Loading…</div>
+              </div>
+            </div>
+
+            <div class="panel" style="margin-bottom:16px;">
+              <div class="panel-head"><h2>Announcements</h2><a class="see-all" href="#">All →</a></div>
+              <div class="announce">
+                <div class="announce-card"><div class="tag">Policy update</div><div class="title">New WFH tagging rule effective Sept 1</div><div class="sub">HR · 2 days ago</div></div>
+                <div class="announce-card"><div class="tag">Holiday</div><div class="title">Office closed Aug 15 — Independence Day</div><div class="sub">Admin · 4 days ago</div></div>
+                <div class="announce-card"><div class="tag">Payroll</div><div class="title">August payslips release on the 30th</div><div class="sub">Finance · 5 days ago</div></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><h2>Upcoming leave</h2><a class="see-all" href="#" onclick="switchTab('leave');return false;">Calendar →</a></div>
+              <div class="leave-strip" id="overviewUpcomingLeave">
+                <div style="color:var(--ink-faint); font-size:12.5px; padding:4px;">Loading…</div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <div class="panel" style="margin-bottom:16px;" id="attentionPanel">
+              <div class="panel-head"><h2>Needs your attention</h2></div>
+              <div style="padding:14px 18px; color:var(--ink-faint); font-size:12.5px;">Loading…</div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-head"><h2>Your to-do</h2><span class="stat-delta" style="margin:0;">5 open</span></div>
+              <div class="todo-row"><div class="todo-check"></div><div class="todo-text">Upload Q3 <b>skill certification</b> to profile</div><div class="todo-tag">Profile</div></div>
+              <div class="todo-row"><div class="todo-check"></div><div class="todo-text">Acknowledge <b>WFH policy</b> update</div><div class="todo-tag">Policy</div></div>
+              <div class="todo-row"><div class="todo-check"></div><div class="todo-text">Review <b>1:1 notes</b> before Friday sync</div><div class="todo-tag">Manager</div></div>
+              <div class="todo-row"><div class="todo-check"></div><div class="todo-text">Submit <b>timesheet</b> for client engagement</div><div class="todo-tag">Client</div></div>
+              <div class="todo-row"><div class="todo-check"></div><div class="todo-text">Confirm <b>emergency contact</b> details</div><div class="todo-tag">HR</div></div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- ATTENDANCE SECTION                                            -->
+      <!-- ============================================================ -->
+      <section class="section" id="section-attendance">
+        <div class="page-head">
+          <h1>Attendance</h1>
+          <div class="date">August 2026</div>
+        </div>
+        <div class="page-tabs">
+          <div class="page-tab active" data-atab="summary">Summary</div>
+          <div class="page-tab" data-atab="analytics">Analytics</div>
+          <div class="page-tab" data-atab="logs">Daily logs</div>
+        </div>
+
+        <div class="attendance-toolbar">
+          <div class="seg-control">
+            <div class="seg-btn active">My view</div>
+            <div class="seg-btn">Team</div>
+            <div class="seg-btn">Organization</div>
+          </div>
+          <select class="filter-select"><option>This month</option><option>Last 30 days</option><option>Custom range…</option></select>
+          <select class="filter-select"><option>All departments</option><option>Engineering</option><option>Design</option><option>QA</option></select>
+        </div>
+
+        <div class="attn-summary-grid">
+          <div class="donut-card">
+            <div class="donut" id="attnDonut"></div>
+            <div class="donut-legend">
+              <div><span style="background:var(--brand)"></span>Office <b id="officePctText">—</b></div>
+              <div><span style="background:#4F8FA8"></span>WFH <b id="wfhPctText">—</b></div>
+              <div><span style="background:var(--amber)"></span>Partial day <b id="partialPctText">—</b></div>
+              <div><span style="background:var(--border)"></span>Leave/off <b id="leavePctText">—</b></div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">On-time rate</span><div class="stat-icon green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg></div></div>
+            <div class="stat-value" id="onTimeRateValue">—</div>
+            <div class="stat-delta">This month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-top"><span class="stat-label">Overtime logged</span><div class="stat-icon blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div></div>
+            <div class="stat-value" id="overtimeValue">—</div>
+            <div class="stat-delta" id="overtimeSessionsText">—</div>
+          </div>
+        </div>
+
+        <div class="heatmap-panel">
+          <div class="heatmap-title" id="heatmapTitle">Daily attendance</div>
+          <div class="heatmap-grid" id="heatmapGrid"></div>
+          <div class="heatmap-legend">
+            <div><span style="background:var(--moss)"></span>Full day</div>
+            <div><span style="background:#4F8FA8"></span>WFH</div>
+            <div><span style="background:var(--amber)"></span>Partial</div>
+            <div><span style="background:var(--violet-soft);border:1px solid var(--violet)"></span>Leave</div>
+            <div><span style="background:var(--border)"></span>No record</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Recent daily logs</h2><a class="see-all" href="#" id="exportCsvLink">Export CSV →</a></div>
+          <table class="data-table">
+            <thead><tr><th>Date</th><th>Clock in</th><th>Clock out</th><th>Break</th><th>Hours</th><th>Mode</th><th>Status</th></tr></thead>
+            <tbody id="attendanceLogsBody">
+              <tr><td colspan="7" style="text-align:center; color:var(--ink-faint);">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ============================================================ -->
+      <!-- LEAVE SECTION                                                 -->
+      <!-- ============================================================ -->
+      <section class="section" id="section-leave">
+        <div class="page-head">
+          <h1>Leave</h1>
+          <div class="date" id="leaveBalanceDate">Balance as of —</div>
+        </div>
+
+        <div class="leave-balance-row" id="leaveBalanceRow">
+          <div class="lb-card"><div class="lb-numbers"><span>Loading balances…</span></div></div>
+        </div>
+
+        <div class="leave-apply-panel">
+          <h2 style="font-family:var(--font-display); font-size:15px; margin-bottom:16px;">Apply for leave</h2>
+          <div class="login-error" id="leaveApplyError"></div>
+          <form id="leaveApplyForm">
+            <div class="form-row">
+              <div class="form-field"><label>Leave type</label>
+                <select id="leaveTypeSelect"><option>Loading…</option></select>
+              </div>
+              <div class="form-field"><label>From</label><input type="date" id="leaveFromInput" required></div>
+              <div class="form-field"><label>To</label><input type="date" id="leaveToInput" required></div>
+            </div>
+            <div class="form-row" style="grid-template-columns:1fr;">
+              <div class="form-field"><label>Reason / justification</label><textarea id="leaveReasonInput" placeholder="Brief note for your approver…"></textarea></div>
+            </div>
+            <button type="submit" class="btn-submit" id="leaveSubmitBtn">Submit request</button>
+          </form>
+        </div>
+
+        <section class="grid-2col">
+          <div class="panel">
+            <div class="panel-head"><h2>My leave history</h2></div>
+            <table class="data-table">
+              <thead><tr><th>Type</th><th>Dates</th><th>Days</th><th>Status</th></tr></thead>
+              <tbody id="leaveHistoryBody">
+                <tr><td colspan="4" style="text-align:center; color:var(--ink-faint);">Loading…</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h2>Team calendar</h2></div>
+            <div class="leave-strip" style="flex-direction:column; align-items:stretch;" id="teamCalendarList">
+              <div style="padding:14px 4px; color:var(--ink-faint); font-size:12.5px;">Loading…</div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+    </main>
+  </div>
+
+  </div><!-- /#appShell -->
+
+<script>
+  const pad = n => String(n).padStart(2,'0');
+  function tick(){
+    const now = new Date();
+    const h = pad(now.getHours()), m = pad(now.getMinutes()), s = pad(now.getSeconds());
+    document.getElementById('miniClock').textContent = `${h}:${m}:${s} IST`;
+    document.getElementById('heroClock').textContent = `${h}:${m}:${s}`;
+  }
+  tick(); setInterval(tick, 1000);
+
+  // ---- Tab navigation ----
+  function switchTab(tab){
+    document.querySelectorAll('.nav-item[data-tab]').forEach(el=>el.classList.toggle('active', el.dataset.tab===tab));
+    document.querySelectorAll('.section').forEach(el=>el.classList.toggle('active', el.id === 'section-'+tab));
+    window.scrollTo({top:0, behavior:'smooth'});
+    if (tab === 'attendance' && typeof loadAttendanceSection === 'function') loadAttendanceSection();
+    if (tab === 'leave' && typeof loadLeaveSection === 'function') loadLeaveSection();
+  }
+  document.querySelectorAll('.nav-item[data-tab]').forEach(btn=>{
+    btn.addEventListener('click', ()=>switchTab(btn.dataset.tab));
+  });
+
+  document.querySelectorAll('.page-tab').forEach(t=>{
+    t.addEventListener('click', function(){
+      this.parentElement.querySelectorAll('.page-tab').forEach(x=>x.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+
+  document.querySelectorAll('.seg-control').forEach(sc=>{
+    sc.querySelectorAll('.seg-btn').forEach(btn=>{
+      btn.addEventListener('click', function(){
+        sc.querySelectorAll('.seg-btn').forEach(x=>x.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  });
+</script>
+
+<script>
+  // ---- API / auth wiring ----
+  const API_BASE = window.NFORCEHQ_API_BASE || 'http://localhost:8080';
+  const TOKEN_KEY = 'nforcehq_token';
+  const ORG_KEY = 'nforcehq_selected_org';
+
+  function getToken(){ return localStorage.getItem(TOKEN_KEY); }
+  function getSelectedOrg(){ return localStorage.getItem(ORG_KEY); }
+
+  async function apiFetch(path, opts = {}){
+    const headers = Object.assign({}, opts.headers, {
+      'Authorization': 'Bearer ' + getToken(),
+    });
+    if (opts.body) headers['Content-Type'] = 'application/json';
+    const selectedOrg = getSelectedOrg();
+    if (selectedOrg) headers['X-Organization-Id'] = selectedOrg;
+
+    const res = await fetch(API_BASE + path, Object.assign({}, opts, { headers }));
+    if (res.status === 401) {
+      logout();
+      throw new Error('Session expired');
+    }
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw new Error(body.message || body.error || ('Request failed: ' + res.status));
+    }
+    if (res.status === 204) return null;
+    return res.json();
+  }
+
+  function showLogin(message){
+    document.getElementById('appShell').style.display = 'none';
+    document.getElementById('loginScreen').style.display = 'flex';
+    const errorEl = document.getElementById('loginError');
+    if (message) {
+      errorEl.textContent = message;
+      errorEl.classList.add('show');
+    } else {
+      errorEl.classList.remove('show');
+    }
+  }
+
+  function showApp(){
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appShell').style.display = 'flex';
+  }
+
+  function logout(){
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(ORG_KEY);
+    // Full reload rather than just showing the login screen — clears every in-memory
+    // JS variable (currentUser, currentAttendance, timers) so the next person to log
+    // in on this browser never sees a flash of the previous user's data.
+    location.reload();
+  }
+  document.getElementById('logoutLink').addEventListener('click', (e) => { e.preventDefault(); logout(); });
+
+  function initialsOf(name){
+    return name.split(' ').filter(Boolean).slice(0, 2).map(p => p[0].toUpperCase()).join('');
+  }
+
+  let currentUser = null;
+
+  function renderUser(user){
+    currentUser = user;
+    document.getElementById('userName').textContent = user.name;
+    document.getElementById('userRole').textContent = user.orgName ? user.role + ' · ' + user.orgName : user.role;
+    document.getElementById('userAvatar').textContent = initialsOf(user.name);
+    document.getElementById('rolePillText').textContent = user.role.replace('_', ' ');
+
+    const orgSwitch = document.getElementById('orgSwitch');
+    if (user.role === 'PLATFORM_ADMIN') {
+      orgSwitch.innerHTML = '<div class="avatar-sq"></div><select class="org-select" id="orgSelect"><option>Loading orgs…</option></select>';
+      loadOrgOptions();
+    } else {
+      document.getElementById('orgName').textContent = user.orgName || '—';
+    }
+  }
+
+  async function loadOrgOptions(){
+    try {
+      const orgs = await apiFetch('/api/organizations');
+      const select = document.getElementById('orgSelect');
+      select.innerHTML = orgs.map(o => `<option value="${o.id}">${o.name}</option>`).join('');
+      const stored = getSelectedOrg();
+      if (stored && orgs.some(o => o.id === stored)) {
+        select.value = stored;
+      } else if (orgs.length) {
+        localStorage.setItem(ORG_KEY, orgs[0].id);
+      }
+      select.addEventListener('change', () => {
+        localStorage.setItem(ORG_KEY, select.value);
+      });
+    } catch (err) {
+      console.error('Failed to load organizations', err);
+    }
+  }
+
+  // ---- Overview: attendance hero widget ----
+  let currentAttendance = null;
+  let elapsedTimer = null;
+
+  function fmtTime(iso){
+    if (!iso) return '';
+    const d = new Date(iso);
+    return pad(d.getHours()) + ':' + pad(d.getMinutes());
+  }
+
+  function fmtDuration(minutes){
+    const hrs = Math.floor(minutes / 60), mins = minutes % 60;
+    return `${hrs}h ${mins}m`;
+  }
+
+  async function loadAttendance(){
+    try {
+      currentAttendance = await apiFetch('/api/attendance/me/today');
+    } catch (err) {
+      console.error('Failed to load attendance', err);
+      currentAttendance = null;
+    }
+    renderHero();
+  }
+
+  function renderHero(){
+    if (!currentUser) return;
+    document.getElementById('heroName').textContent = currentUser.name;
+    const a = currentAttendance;
+    const heroSub = document.getElementById('heroSub');
+    const clockBtn = document.getElementById('clockBtn');
+    const clockBtnLabel = document.getElementById('clockBtnLabel');
+    const elapsedEl = document.getElementById('elapsedTime');
+
+    if (elapsedTimer) { clearInterval(elapsedTimer); elapsedTimer = null; }
+
+    if (!a || !a.clockInAt) {
+      heroSub.textContent = currentUser.jobTitle ? `Not clocked in yet · ${currentUser.jobTitle}` : 'Not clocked in yet today';
+      elapsedEl.textContent = 'Not on the clock';
+      clockBtn.disabled = false;
+      clockBtn.classList.add('out');
+      clockBtnLabel.textContent = 'Clock in';
+    } else if (!a.clockOutAt) {
+      heroSub.textContent = `Clocked in at ${fmtTime(a.clockInAt)} · ${a.mode}` + (currentUser.jobTitle ? ` · ${currentUser.jobTitle}` : '');
+      clockBtn.disabled = false;
+      clockBtn.classList.remove('out');
+      clockBtnLabel.textContent = a.onBreak ? 'On break — clock out' : 'Clock out';
+      const updateElapsed = () => {
+        const diffMin = Math.floor((Date.now() - new Date(a.clockInAt).getTime()) / 60000);
+        elapsedEl.textContent = fmtDuration(Math.max(0, diffMin)) + ' on the clock';
+      };
+      updateElapsed();
+      elapsedTimer = setInterval(updateElapsed, 30000);
+    } else {
+      heroSub.textContent = `Clocked out at ${fmtTime(a.clockOutAt)} · ${a.mode}` + (currentUser.jobTitle ? ` · ${currentUser.jobTitle}` : '');
+      elapsedEl.textContent = fmtDuration(a.totalWorkedMinutes || 0) + ' worked today';
+      clockBtn.disabled = true;
+      clockBtn.classList.add('out');
+      clockBtnLabel.textContent = 'Shift complete';
+    }
+
+    renderShiftRail(a);
+  }
+
+  function renderShiftRail(a){
+    const rail = document.getElementById('shiftRail');
+    rail.innerHTML = '';
+    const today = new Date();
+    const shiftStart = new Date(today); shiftStart.setHours(9, 0, 0, 0);
+    const shiftEnd = new Date(today); shiftEnd.setHours(21, 0, 0, 0);
+    const spanMs = shiftEnd - shiftStart;
+    const clamp = (d) => Math.min(Math.max(d.getTime(), shiftStart.getTime()), shiftEnd.getTime());
+    const pct = (ms) => (ms / spanMs) * 100;
+
+    const addSeg = (cls, widthPct) => {
+      if (widthPct <= 0) return;
+      const el = document.createElement('div');
+      el.className = 'rail-seg ' + cls;
+      el.style.width = widthPct.toFixed(2) + '%';
+      rail.appendChild(el);
+    };
+
+    if (!a || !a.clockInAt) {
+      const pending = document.createElement('div');
+      pending.className = 'rail-seg pending';
+      pending.style.flex = '1';
+      rail.appendChild(pending);
+    } else {
+      const clockIn = clamp(new Date(a.clockInAt));
+      const end = clamp(a.clockOutAt ? new Date(a.clockOutAt) : new Date());
+      addSeg('pending', pct(clockIn - shiftStart.getTime()));
+
+      const modeCls = (a.mode || 'OFFICE').toLowerCase();
+      let cursor = clockIn;
+      (a.breaks || []).forEach(b => {
+        const bStart = clamp(new Date(b.startAt));
+        const bEnd = clamp(b.endAt ? new Date(b.endAt) : new Date());
+        if (bStart > cursor) addSeg(modeCls, pct(bStart - cursor));
+        if (bEnd > bStart) addSeg('break', pct(bEnd - bStart));
+        cursor = Math.max(cursor, bEnd);
+      });
+      if (end > cursor) addSeg(modeCls, pct(end - cursor));
+
+      if (shiftEnd.getTime() > end) {
+        const trailing = document.createElement('div');
+        trailing.className = 'rail-seg pending';
+        trailing.style.flex = '1';
+        rail.appendChild(trailing);
+      }
+    }
+
+    if (!a || !a.clockOutAt) {
+      const now = Date.now();
+      if (now >= shiftStart.getTime() && now <= shiftEnd.getTime()) {
+        const marker = document.createElement('div');
+        marker.className = 'rail-now';
+        marker.style.left = pct(now - shiftStart.getTime()).toFixed(2) + '%';
+        rail.appendChild(marker);
+      }
+    }
+  }
+
+  // ---- Attendance tab: summary / heatmap / logs (My view, current month) ----
+  const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  function currentMonthParam(){
+    const d = new Date();
+    return d.getFullYear() + '-' + pad(d.getMonth() + 1);
+  }
+
+  async function loadAttendanceSection(){
+    const month = currentMonthParam();
+    document.getElementById('heatmapTitle').textContent = 'Daily attendance — ' + MONTH_NAMES[new Date().getMonth()];
+
+    try {
+      const summary = await apiFetch('/api/attendance/summary?view=my&month=' + month);
+      renderAttendanceSummary(summary);
+    } catch (err) { console.error('Failed to load attendance summary', err); }
+
+    try {
+      const heatmap = await apiFetch('/api/attendance/heatmap?month=' + month);
+      renderHeatmap(heatmap);
+    } catch (err) { console.error('Failed to load attendance heatmap', err); }
+
+    try {
+      const logs = await apiFetch('/api/attendance/logs?view=my&month=' + month + '&size=20');
+      renderAttendanceLogs(logs);
+    } catch (err) { console.error('Failed to load attendance logs', err); }
+  }
+
+  function renderAttendanceSummary(s){
+    document.getElementById('officePctText').textContent = s.officePct + '%';
+    document.getElementById('wfhPctText').textContent = s.wfhPct + '%';
+    document.getElementById('partialPctText').textContent = s.partialPct + '%';
+    document.getElementById('leavePctText').textContent = s.leavePct + '%';
+    document.getElementById('onTimeRateValue').innerHTML = s.onTimeRatePct + '<small>%</small>';
+    document.getElementById('overtimeValue').innerHTML = s.overtimeHours + '<small>h</small>';
+    document.getElementById('overtimeSessionsText').textContent = 'Across ' + s.overtimeSessions + ' session' + (s.overtimeSessions === 1 ? '' : 's');
+
+    let office = s.officePct, wfhEnd = office + s.wfhPct, partialEnd = wfhEnd + s.partialPct;
+    document.getElementById('attnDonut').style.background =
+      `conic-gradient(var(--brand) 0% ${office}%, #4F8FA8 ${office}% ${wfhEnd}%, var(--amber) ${wfhEnd}% ${partialEnd}%, var(--border) ${partialEnd}% 100%)`;
+  }
+
+  function renderHeatmap(days){
+    const grid = document.getElementById('heatmapGrid');
+    grid.innerHTML = '';
+    days.forEach(day => {
+      const cell = document.createElement('div');
+      cell.className = 'hm-cell ' + (day.type === 'none' ? '' : day.type);
+      cell.title = day.date;
+      grid.appendChild(cell);
+    });
+  }
+
+  function renderAttendanceLogs(rows){
+    const tbody = document.getElementById('attendanceLogsBody');
+    if (!rows.length) {
+      tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:var(--ink-faint);">No attendance records this month</td></tr>';
+      return;
+    }
+    const statusPill = (status) => {
+      const map = { ON_TIME: ['green','On time'], LATE: ['amber','Late'], IN_PROGRESS: ['blue','In progress'], ABSENT: ['red','Absent'], ON_LEAVE: ['red','On leave'] };
+      const [cls, label] = map[status] || ['blue', status];
+      return `<span class="pill ${cls}">${label}</span>`;
+    };
+    tbody.innerHTML = rows.map(r => `
+      <tr>
+        <td>${new Date(r.workDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</td>
+        <td class="mono">${r.clockInAt ? fmtTime(r.clockInAt) : '—'}</td>
+        <td class="mono">${r.clockOutAt ? fmtTime(r.clockOutAt) : '—'}</td>
+        <td class="mono">${r.totalBreakMinutes ? Math.floor(r.totalBreakMinutes/60) + ':' + pad(r.totalBreakMinutes%60) : '—'}</td>
+        <td class="mono">${r.totalWorkedMinutes != null ? Math.floor(r.totalWorkedMinutes/60) + ':' + pad(r.totalWorkedMinutes%60) : '—'}</td>
+        <td>${r.mode === 'WFH' ? 'WFH' : 'Office'}</td>
+        <td>${statusPill(r.status)}</td>
+      </tr>`).join('');
+  }
+
+  document.getElementById('exportCsvLink').addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      const token = getToken();
+      const res = await fetch(API_BASE + '/api/attendance/logs/export?view=my&month=' + currentMonthParam(), {
+        headers: { 'Authorization': 'Bearer ' + token },
+      });
+      if (!res.ok) throw new Error('Export failed');
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'attendance-logs.csv';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err.message);
+    }
+  });
+
+  // ---- Leave tab: balances / apply / history / team calendar ----
+  const LEAVE_COLOR_VARS = { brand: 'var(--brand)', moss: 'var(--moss)', amber: 'var(--amber)', violet: 'var(--violet)', ink: 'var(--ink-faint)' };
+  let leaveTypesCache = [];
+
+  function fmtDateShort(iso){
+    return new Date(iso + 'T00:00:00').toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  }
+
+  function fmtDateRange(startIso, endIso){
+    return startIso === endIso ? fmtDateShort(startIso) : fmtDateShort(startIso) + '–' + fmtDateShort(endIso);
+  }
+
+  async function loadLeaveSection(){
+    document.getElementById('leaveBalanceDate').textContent = 'Balance as of ' + new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+    try {
+      leaveTypesCache = await apiFetch('/api/leave-types');
+      const select = document.getElementById('leaveTypeSelect');
+      select.innerHTML = leaveTypesCache.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+    } catch (err) { console.error('Failed to load leave types', err); }
+
+    try {
+      const balances = await apiFetch('/api/leave/balances/me');
+      renderLeaveBalances(balances);
+    } catch (err) { console.error('Failed to load leave balances', err); }
+
+    try {
+      const history = await apiFetch('/api/me/requests/history');
+      renderLeaveHistory(history);
+    } catch (err) { console.error('Failed to load leave history', err); }
+
+    try {
+      const calendar = await apiFetch('/api/leave/team-calendar');
+      renderTeamCalendar(calendar);
+    } catch (err) { console.error('Failed to load team calendar', err); }
+  }
+
+  function renderLeaveBalances(balances){
+    const row = document.getElementById('leaveBalanceRow');
+    if (!balances.length) {
+      row.innerHTML = '<div class="lb-card"><div class="lb-numbers"><span>No leave balances set up yet</span></div></div>';
+      return;
+    }
+    row.innerHTML = balances.map(b => {
+      const color = LEAVE_COLOR_VARS[b.colorToken] || 'var(--brand)';
+      const pct = b.allocatedDays > 0 ? Math.round((b.remainingDays / b.allocatedDays) * 100) : 0;
+      return `
+        <div class="lb-card">
+          <div class="lb-top"><span class="lb-name">${b.leaveTypeName}</span><span class="lb-dot" style="background:${color}"></span></div>
+          <div class="lb-bar"><div class="lb-bar-fill" style="width:${pct}%; background:${color}"></div></div>
+          <div class="lb-numbers"><b>${b.remainingDays}</b><span>of ${b.allocatedDays} days</span></div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderLeaveHistory(items){
+    const tbody = document.getElementById('leaveHistoryBody');
+    if (!items.length) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:var(--ink-faint);">No requests yet</td></tr>';
+      return;
+    }
+    const statusClass = { APPROVED: 'approved', PENDING: 'pending', REJECTED: 'rejected', CANCELLED: 'rejected' };
+    tbody.innerHTML = items.map(r => `
+      <tr>
+        <td>${r.typeLabel}</td>
+        <td class="mono">${fmtDateRange(r.startDate, r.endDate)}</td>
+        <td class="mono">${r.days}</td>
+        <td><span class="history-status ${statusClass[r.status] || ''}">${r.status.charAt(0) + r.status.slice(1).toLowerCase()}</span></td>
+      </tr>`).join('');
+  }
+
+  function renderTeamCalendar(entries){
+    const list = document.getElementById('teamCalendarList');
+    if (!entries.length) {
+      list.innerHTML = '<div style="padding:14px 4px; color:var(--ink-faint); font-size:12.5px;">No upcoming approved leave</div>';
+      return;
+    }
+    list.innerHTML = entries.map(e => `
+      <div class="leave-chip" style="width:100%; justify-content:space-between;">
+        <span><div class="avatar-circle" style="display:inline-flex; vertical-align:middle;">${e.avatarInitials || '?'}</div> <b>${e.userName}</b></span>
+        <span class="when">${fmtDateRange(e.startDate, e.endDate)}</span>
+      </div>`).join('');
+  }
+
+  document.getElementById('leaveApplyForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const errorEl = document.getElementById('leaveApplyError');
+    errorEl.classList.remove('show');
+    const submitBtn = document.getElementById('leaveSubmitBtn');
+    submitBtn.disabled = true;
+    try {
+      await apiFetch('/api/leave-requests', {
+        method: 'POST',
+        body: JSON.stringify({
+          leaveTypeId: document.getElementById('leaveTypeSelect').value,
+          startDate: document.getElementById('leaveFromInput').value,
+          endDate: document.getElementById('leaveToInput').value,
+          reason: document.getElementById('leaveReasonInput').value,
+        }),
+      });
+      document.getElementById('leaveApplyForm').reset();
+      loadLeaveSection();
+    } catch (err) {
+      errorEl.textContent = err.message;
+      errorEl.classList.add('show');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  document.getElementById('clockBtn').addEventListener('click', async function(){
+    if (!currentAttendance || !currentAttendance.clockInAt || currentAttendance.clockOutAt) {
+      try { currentAttendance = await apiFetch('/api/attendance/clock-in', { method: 'POST', body: JSON.stringify({ mode: 'OFFICE' }) }); }
+      catch (err) { alert(err.message); return; }
+    } else {
+      try { currentAttendance = await apiFetch('/api/attendance/clock-out', { method: 'POST' }); }
+      catch (err) { alert(err.message); return; }
+    }
+    renderHero();
+  });
+
+  // ---- Overview: team today, upcoming leave, manager-only stats + approvals ----
+  const MANAGER_ROLES = ['MANAGER', 'ADMIN', 'PLATFORM_ADMIN'];
+
+  function statusDotClass(status){
+    if (status === 'In office') return 'in';
+    if (status === 'Remote') return 'wfh';
+    if (status === 'On break') return 'break';
+    return 'out';
+  }
+
+  async function loadOverviewSection(){
+    try {
+      const team = await apiFetch('/api/team/today-status');
+      renderTeamToday(team);
+    } catch (err) { console.error('Failed to load team today', err); }
+
+    try {
+      const upcoming = await apiFetch('/api/leave/team-calendar');
+      renderOverviewUpcomingLeave(upcoming);
+    } catch (err) { console.error('Failed to load upcoming leave', err); }
+
+    const isManager = currentUser && MANAGER_ROLES.includes(currentUser.role);
+    document.getElementById('overviewStatsRow').style.display = isManager ? '' : 'none';
+    document.getElementById('attentionPanel').style.display = isManager ? '' : 'none';
+    if (!isManager) return;
+
+    try {
+      const stats = await apiFetch('/api/dashboard/stats');
+      renderOverviewStats(stats);
+    } catch (err) { console.error('Failed to load dashboard stats', err); }
+
+    await loadAttentionPanel();
+  }
+
+  function renderTeamToday(team){
+    const list = document.getElementById('teamTodayList');
+    if (!team.length) {
+      list.innerHTML = '<div class="team-row" style="color:var(--ink-faint);">No direct reports</div>';
+      return;
+    }
+    list.innerHTML = team.map(m => `
+      <div class="team-row">
+        <div class="avatar-circle">${(m.avatarInitials || '?')}</div>
+        <div class="team-meta"><div class="name">${m.name}</div><div class="role">${m.jobTitle || ''}</div></div>
+        <div class="status-text"><span class="status-dot ${statusDotClass(m.status)}"></span>${m.status}</div>
+        <div class="team-time">${m.clockInTime || '—'}</div>
+      </div>`).join('');
+  }
+
+  function renderOverviewUpcomingLeave(entries){
+    const strip = document.getElementById('overviewUpcomingLeave');
+    if (!entries.length) {
+      strip.innerHTML = '<div style="color:var(--ink-faint); font-size:12.5px; padding:4px;">No upcoming leave</div>';
+      return;
+    }
+    strip.innerHTML = entries.slice(0, 6).map(e => `
+      <div class="leave-chip"><div class="avatar-circle">${e.avatarInitials || '?'}</div><b>${e.userName.split(' ')[0]}</b><span class="when">${fmtDateRange(e.startDate, e.endDate)}</span></div>
+    `).join('');
+  }
+
+  function renderOverviewStats(s){
+    document.getElementById('statPresentToday').innerHTML = `${s.presentToday} <small>/ ${s.totalHeadcount}</small>`;
+    const pendingTotal = s.pendingLeaveCount + s.pendingRegularizationCount;
+    document.getElementById('statPendingApprovals').textContent = pendingTotal;
+    document.getElementById('statPendingBreakdown').textContent = `${s.pendingLeaveCount} leave · ${s.pendingRegularizationCount} regularizations`;
+    document.getElementById('statMismatches').textContent = s.mismatchesFlagged;
+    document.getElementById('statAvgHours').innerHTML = `${s.avgHoursThisWeek}<small>h</small>`;
+  }
+
+  const ATTN_ICONS = {
+    LEAVE: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/></svg>',
+    REGULARIZATION: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/></svg>',
+    MISMATCH: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 9 16H3l9-16Z"/><path d="M12 10v4M12 17h.01"/></svg>',
+  };
+
+  async function loadAttentionPanel(){
+    try {
+      const items = await apiFetch('/api/approvals/pending');
+      renderAttentionPanel(items);
+    } catch (err) { console.error('Failed to load approvals', err); }
+  }
+
+  function renderAttentionPanel(items){
+    const panel = document.getElementById('attentionPanel');
+    if (!items.length) {
+      panel.innerHTML = '<div class="panel-head"><h2>Needs your attention</h2></div><div style="padding:14px 18px; color:var(--ink-faint); font-size:12.5px;">Nothing pending — you\'re all caught up</div>';
+      return;
+    }
+    const badgeClass = { LEAVE: 'amber', REGULARIZATION: 'amber', MISMATCH: 'red' };
+    panel.innerHTML = '<div class="panel-head"><h2>Needs your attention</h2></div>' + items.map(item => `
+      <div class="attn-item">
+        <div class="attn-badge ${badgeClass[item.type]}">${ATTN_ICONS[item.type]}</div>
+        <div class="attn-body">
+          <div class="attn-title">${item.title}</div>
+          <div class="attn-sub">${item.subtitle}</div>
+          <div class="attn-actions">
+            ${item.type === 'MISMATCH'
+              ? `<button class="btn-mini primary" data-action="resolve" data-type="${item.type}" data-id="${item.id}">Resolve</button>`
+              : `<button class="btn-mini primary" data-action="approve" data-type="${item.type}" data-id="${item.id}">Approve</button>
+                 <button class="btn-mini" data-action="reject" data-type="${item.type}" data-id="${item.id}">Decline</button>`}
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  document.getElementById('attentionPanel').addEventListener('click', async (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const { action, type, id } = btn.dataset;
+    btn.disabled = true;
+    try {
+      if (type === 'LEAVE') {
+        await apiFetch(`/api/leave-requests/${id}/${action === 'approve' ? 'approve' : 'reject'}`, { method: 'POST' });
+      } else if (type === 'REGULARIZATION') {
+        await apiFetch(`/api/regularizations/${id}/${action === 'approve' ? 'approve' : 'reject'}`, { method: 'POST' });
+      } else if (type === 'MISMATCH') {
+        await apiFetch(`/api/attendance/mismatches/${encodeURIComponent(id)}/resolve`, { method: 'POST' });
+      }
+      await loadAttentionPanel();
+      const stats = await apiFetch('/api/dashboard/stats');
+      renderOverviewStats(stats);
+    } catch (err) {
+      alert(err.message);
+      btn.disabled = false;
+    }
+  });
+
+  async function loadSession(){
+    if (!getToken()) { showLogin(); return; }
+    try {
+      const user = await apiFetch('/api/auth/me');
+      renderUser(user);
+      showApp();
+      loadAttendance();
+      loadOverviewSection();
+    } catch (err) {
+      showLogin();
+    }
+  }
+
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const submitBtn = document.getElementById('loginSubmit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Signing in…';
+    try {
+      const res = await fetch(API_BASE + '/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      const body = await res.json();
+      if (!res.ok) throw new Error(body.message || 'Invalid email or password');
+      localStorage.setItem(TOKEN_KEY, body.token);
+      renderUser(body.user);
+      showApp();
+      loadAttendance();
+      loadOverviewSection();
+    } catch (err) {
+      showLogin(err.message || 'Sign in failed');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Sign in';
+    }
+  });
+
+  loadSession();
+</script>
+
+</body>
+</html>
