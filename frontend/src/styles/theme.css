@@ -1,0 +1,34 @@
+:root {
+  /* Black / ink */
+  --black: #0b0b0c;
+  --ink: #161617;
+  --ink-soft: #5a5a5e;
+  --ink-faint: #97979b;
+
+  /* White / surfaces */
+  --white: #ffffff;
+  --surface: #ffffff;
+  --surface-alt: #f6f6f7;
+  --surface-sunken: #eeeeef;
+  --border: #e1e1e3;
+  --border-strong: #cccccf;
+
+  /* Red — the one accent color in the whole system */
+  --red: #d81e27;
+  --red-dark: #a5151c;
+  --red-darker: #7a1013;
+  --red-soft: #fbe8e9;
+  --red-soft-strong: #f5c9cb;
+
+  /* On-black text */
+  --on-black: #ffffff;
+  --on-black-soft: #b8b8ba;
+  --on-black-faint: #7d7d80;
+
+  --radius: 10px;
+  --radius-sm: 6px;
+
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
