@@ -1,7 +1,31 @@
+import { useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
+import { roleLabel } from '../utils/roles';
+import { IconChevronDown } from '../components/icons';
+
+function groupByDepartment(people) {
+  const groups = new Map();
+  people.forEach((p) => {
+    const key = p.departmentName || 'Unassigned';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(p);
+  });
+  return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b));
+}
 
 export default function PeoplePage() {
   const { data: people } = useApi('/api/people');
+  const [collapsed, setCollapsed] = useState(() => new Set());
+
+  const groups = useMemo(() => (people ? groupByDepartment(people) : []), [people]);
+
+  function toggle(dept) {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(dept)) next.delete(dept); else next.add(dept);
+      return next;
+    });
+  }
 
   return (
     <section>
@@ -10,21 +34,35 @@ export default function PeoplePage() {
         <div className="date">{people?.length || 0} people</div>
       </div>
 
-      <div className="people-grid">
-        {!people?.length && <div className="panel-empty">No one to show yet</div>}
-        {people?.map((p) => (
-          <div className="people-card" key={p.id}>
-            <div className="avatar-circle">{p.avatarInitials || '?'}</div>
-            <div className="people-card-meta">
-              <div className="name">{p.fullName}</div>
-              <div className="title">{p.jobTitle || p.role.replace('_', ' ')}</div>
-              <div className="dept">{p.departmentName || '—'}</div>
-              <div className="contact">{p.email}{p.phone ? ` · ${p.phone}` : ''}</div>
-            </div>
-            <span className="pill neutral">{p.role.replace('_', ' ')}</span>
+      {!people?.length && <div className="panel"><div className="panel-empty">No one to show yet</div></div>}
+
+      {groups.map(([dept, members]) => {
+        const isCollapsed = collapsed.has(dept);
+        return (
+          <div className="panel" key={dept} style={{ marginBottom: 14 }}>
+            <button type="button" className="people-dept-head" onClick={() => toggle(dept)}>
+              <span className={'appraisal-chevron' + (!isCollapsed ? ' open' : '')}><IconChevronDown /></span>
+              <h2>{dept}</h2>
+              <span className="pill neutral">{members.length}</span>
+            </button>
+            {!isCollapsed && (
+              <div className="people-grid">
+                {members.map((p) => (
+                  <div className="people-card" key={p.id}>
+                    <div className="avatar-circle">{p.avatarInitials || '?'}</div>
+                    <div className="people-card-meta">
+                      <div className="name">{p.fullName}</div>
+                      <div className="title">{p.jobTitle || roleLabel(p.role)}</div>
+                      <div className="contact">{p.email || 'Contact hidden'}{p.phone ? ` · ${p.phone}` : ''}</div>
+                    </div>
+                    <span className="pill neutral">{roleLabel(p.role)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
-        ))}
-      </div>
+        );
+      })}
     </section>
   );
 }

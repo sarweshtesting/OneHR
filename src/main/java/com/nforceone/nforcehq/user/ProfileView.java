@@ -17,6 +17,7 @@ public record ProfileView(
         String managerName,
         LocalDate hireDate,
         String avatarInitials,
+        String avatarPhotoDataUri,
         String emergencyContactName,
         String emergencyContactRelationship,
         String emergencyContactPhone) {

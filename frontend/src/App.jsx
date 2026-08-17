@@ -1,5 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
+import RequireFinanceAccess from './components/RequireFinanceAccess';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -34,7 +35,9 @@ export default function App() {
           <Route path="/org-hierarchy" element={<OrgHierarchyPage />} />
           <Route path="/appraisal" element={<AppraisalPage />} />
           <Route path="/people" element={<PeoplePage />} />
-          <Route path="/finance" element={<FinanceChatPage />} />
+          <Route element={<RequireFinanceAccess />}>
+            <Route path="/finance" element={<FinanceChatPage />} />
+          </Route>
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/help" element={<HelpPage />} />
           <Route path="/" element={<Navigate to="/overview" replace />} />

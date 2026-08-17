@@ -79,4 +79,10 @@ public class User extends BaseEntity {
 
     @Column(name = "emergency_contact_phone")
     private String emergencyContactPhone;
+
+    @Column(name = "avatar_content_type")
+    private String avatarContentType;
+
+    @Column(name = "avatar_photo")
+    private byte[] avatarPhoto;
 }

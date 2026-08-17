@@ -24,7 +24,7 @@ public final class ApprovalScope {
                     .map(User::getId)
                     .toList();
         }
-        if (Role.ADMIN.name().equals(principal.role()) || Role.PLATFORM_ADMIN.name().equals(principal.role())) {
+        if (Roles.ORG_WIDE.contains(principal.role())) {
             return userRepository.findByOrganizationId(organizationId).stream()
                     .map(User::getId)
                     .toList();

@@ -29,13 +29,13 @@ public class AppraisalController {
     }
 
     @GetMapping("/team")
-    @PreAuthorize("hasAnyRole('MANAGER','ADMIN','PLATFORM_ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER','HR_ADMIN','ADMIN','SUPER_ADMIN','PLATFORM_ADMIN')")
     public List<AppraisalView> team(@AuthenticationPrincipal JwtPrincipal principal) {
         return appraisalService.team(principal);
     }
 
     @PostMapping
-    @PreAuthorize("hasAnyRole('MANAGER','ADMIN','PLATFORM_ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER','HR_ADMIN','ADMIN','SUPER_ADMIN','PLATFORM_ADMIN')")
     @ResponseStatus(HttpStatus.CREATED)
     public AppraisalView create(@AuthenticationPrincipal JwtPrincipal principal, @Valid @RequestBody CreateAppraisalRequest request) {
         return appraisalService.create(principal, request);

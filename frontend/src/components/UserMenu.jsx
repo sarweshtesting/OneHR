@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { roleLabel } from '../utils/roles';
 import { IconHelp, IconLogout, IconUser } from './icons';
+import AvatarCircle from './AvatarCircle';
 
 function initialsOf(name) {
   return name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('');
@@ -32,14 +34,14 @@ export default function UserMenu({ orgName }) {
 
   return (
     <div className="header-dropdown-anchor user-chip" onMouseEnter={openMenu} onMouseLeave={scheduleClose}>
-      <div className="avatar-circle">{user ? initialsOf(user.name) : ''}</div>
+      <AvatarCircle photoUrl={user?.avatarPhotoDataUri} initials={user ? initialsOf(user.name) : ''} />
       {open && (
         <div className="header-dropdown">
           <div className="header-dropdown-head">
-            <div className="avatar-circle">{user ? initialsOf(user.name) : ''}</div>
+            <AvatarCircle photoUrl={user?.avatarPhotoDataUri} initials={user ? initialsOf(user.name) : ''} />
             <div>
               <div className="name">{user?.name}</div>
-              <div className="sub">{user?.role.replace('_', ' ')}{orgName ? ` · ${orgName}` : ''}</div>
+              <div className="sub">{roleLabel(user?.role)}{orgName ? ` · ${orgName}` : ''}</div>
             </div>
           </div>
           <button className="header-dropdown-item" onClick={goToProfile}><IconUser />My Profile</button>

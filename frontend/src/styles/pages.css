@@ -176,6 +176,10 @@
 .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
 @media (max-width: 980px) { .profile-grid { grid-template-columns: 1fr; } }
 .profile-panel-body { padding: 18px; }
+.photo-upload-row { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.photo-upload-avatar { width: 56px; height: 56px; font-size: 18px; }
+.photo-upload-hint { font-size: 11px; color: var(--ink-faint); margin-top: 5px; }
+.photo-remove-link { font-size: 11.5px; color: var(--red-dark); font-weight: 600; margin-left: 12px; }
 .profile-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
 .profile-field-row.single { grid-template-columns: 1fr; }
 .profile-readonly-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
@@ -201,7 +205,10 @@
 .finance-chat-input input:focus { outline: none; border-color: var(--red); }
 
 /* ---------- People ---------- */
-.people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.people-dept-head { display: flex; align-items: center; gap: 10px; width: 100%; padding: 14px 18px; text-align: left; border-bottom: 1px solid var(--border); }
+.people-dept-head:hover { background: var(--surface-alt); }
+.people-dept-head h2 { font-family: var(--font-display); font-size: 14px; font-weight: 600; flex: 1; }
+.people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; padding: 14px 18px; }
 .people-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; align-items: flex-start; gap: 12px; }
 .people-card-meta { flex: 1; min-width: 0; }
 .people-card-meta .name { font-weight: 600; font-size: 13.5px; }
@@ -262,18 +269,47 @@
 .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
 .calendar-dow { text-align: center; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: var(--ink-faint); padding-bottom: 6px; }
 .calendar-cell {
-  min-height: 78px; border: 1px solid var(--border); border-radius: 8px; padding: 7px; position: relative;
-  background: var(--surface); font-size: 11.5px; cursor: default;
+  min-height: 84px; border: 1px solid var(--border); border-radius: 8px; padding: 7px; position: relative;
+  background: var(--surface); font-size: 11.5px; cursor: default; transition: box-shadow .12s ease;
 }
 .calendar-cell.outside { background: var(--surface-alt); color: var(--ink-faint); }
-.calendar-cell.today { border-color: var(--red); }
-.calendar-cell.weekend { background: var(--surface-alt); border-style: dashed; border-color: var(--border-strong); }
+.calendar-cell.today { box-shadow: inset 0 0 0 2px var(--red); }
 .calendar-cell .day-num { font-weight: 600; font-family: var(--font-mono); font-size: 12px; }
-.calendar-event { margin-top: 5px; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 10px; line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: help; }
-.calendar-event.holiday { background: var(--red-soft); color: var(--red-dark); }
-.calendar-event.leave { background: var(--surface-sunken); color: var(--ink); margin-top: 3px; }
-.calendar-event.compoff { background: var(--black); color: var(--white); margin-top: 3px; }
-.calendar-event.weekoff { background: transparent; color: var(--ink-faint); font-weight: 700; text-transform: uppercase; letter-spacing: .03em; font-size: 9px; padding: 2px 0; }
-.calendar-legend { display: flex; gap: 16px; margin-top: 14px; font-size: 11.5px; color: var(--ink-soft); }
+
+/* Professional, modern palette for calendar event types — distinct from the app's red/black/white brand,
+   used only here since these boxes need to visually differentiate four categories at a glance. */
+.calendar-cell.cal-holiday { background: #fef6e7; border-color: #f0c869; }
+.calendar-cell.cal-compoff { background: #f1edfb; border-color: #b7a6ea; }
+.calendar-cell.cal-leave { background: #e7f1fc; border-color: #a9cbf0; }
+.calendar-cell.cal-weekend { background: #eef1f4; border-color: #ccd3da; }
+
+.cell-badge {
+  display: inline-block; margin-top: 6px; font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .03em; padding: 2px 6px; border-radius: 10px; background: rgba(255,255,255,0.65); color: var(--ink-soft);
+}
+.cal-holiday .cell-badge { color: #8a6116; }
+.cal-compoff .cell-badge { color: #5b3fa8; }
+.cal-leave .cell-badge { color: #245a9c; }
+.cal-weekend .cell-badge { color: #5a6570; }
+
+.cell-tooltip {
+  position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%) translateY(4px);
+  min-width: 180px; max-width: 240px; background: var(--black); color: var(--on-black); border-radius: 8px;
+  padding: 10px 12px; font-size: 11.5px; box-shadow: 0 10px 24px rgba(0,0,0,0.22); z-index: 20;
+  opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .12s ease, transform .12s ease;
+}
+.cell-tooltip::after {
+  content: ""; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent; border-top-color: var(--black);
+}
+.calendar-cell:hover .cell-tooltip { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+.cell-tooltip-type { font-weight: 700; text-transform: uppercase; letter-spacing: .04em; font-size: 10px; color: var(--red); margin-bottom: 5px; }
+.cell-tooltip-line { line-height: 1.5; color: var(--on-black-soft); }
+
+.calendar-legend { display: flex; gap: 16px; margin-top: 14px; font-size: 11.5px; color: var(--ink-soft); flex-wrap: wrap; }
 .calendar-legend div { display: flex; align-items: center; gap: 6px; }
-.calendar-legend span { width: 9px; height: 9px; border-radius: 2px; }
+.legend-swatch { width: 12px; height: 12px; border-radius: 4px; border: 1px solid var(--border-strong); display: inline-block; }
+.legend-swatch.cal-holiday { background: #fef6e7; border-color: #f0c869; }
+.legend-swatch.cal-compoff { background: #f1edfb; border-color: #b7a6ea; }
+.legend-swatch.cal-leave { background: #e7f1fc; border-color: #a9cbf0; }
+.legend-swatch.cal-weekend { background: #eef1f4; border-color: #ccd3da; }

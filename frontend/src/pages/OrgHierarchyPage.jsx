@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
+import { roleLabel } from '../utils/roles';
 import { IconChevronDown } from '../components/icons';
 
 function buildTree(nodes) {
@@ -34,12 +35,12 @@ function OrgNode({ node, collapsed, toggle }) {
         ) : (
           <span className="org-node-toggle-spacer" />
         )}
-        <div className="avatar-circle" title={node.jobTitle || node.role.replace('_', ' ')}>{node.avatarInitials || '?'}</div>
-        <div className="org-node-meta" title={node.jobTitle || node.role.replace('_', ' ')}>
+        <div className="avatar-circle" title={node.jobTitle || roleLabel(node.role)}>{node.avatarInitials || '?'}</div>
+        <div className="org-node-meta" title={node.jobTitle || roleLabel(node.role)}>
           <div className="name">{node.fullName}</div>
-          <div className="title">{node.jobTitle || node.role.replace('_', ' ')}</div>
+          <div className="title">{node.jobTitle || roleLabel(node.role)}</div>
         </div>
-        <span className="pill neutral">{node.role.replace('_', ' ')}</span>
+        <span className="pill neutral">{roleLabel(node.role)}</span>
       </div>
       {hasChildren && !isCollapsed && (
         <div className="org-node-children">

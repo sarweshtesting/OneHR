@@ -3,8 +3,7 @@ import {
   apiFetch, login as apiLogin, signup as apiSignup, getToken, setToken, clearToken,
   getSelectedOrg, setSelectedOrg, clearSelectedOrg, onUnauthorized,
 } from '../api/client';
-
-const MANAGER_ROLES = ['MANAGER', 'ADMIN', 'PLATFORM_ADMIN'];
+import { isManagerUp, canAccessFinance as roleCanAccessFinance } from '../utils/roles';
 
 const AuthContext = createContext(null);
 
@@ -89,12 +88,23 @@ export function AuthProvider({ children }) {
     setSelectedOrgIdState(orgId);
   }, []);
 
-  const isManager = useMemo(() => user && MANAGER_ROLES.includes(user.role), [user]);
+  /** Re-fetches /api/auth/me — used after profile/avatar edits so the header updates without a re-login. */
+  const refreshUser = useCallback(async () => {
+    try {
+      const me = await apiFetch('/api/auth/me');
+      setUser(me);
+    } catch (err) {
+      console.error('Failed to refresh user', err);
+    }
+  }, []);
+
+  const isManager = useMemo(() => user && isManagerUp(user.role), [user]);
+  const canAccessFinance = useMemo(() => user && roleCanAccessFinance(user.role), [user]);
 
   const value = useMemo(() => ({
-    user, status, organizations, selectedOrgId, isManager,
-    login, signup, logout, selectOrg,
-  }), [user, status, organizations, selectedOrgId, isManager, login, signup, logout, selectOrg]);
+    user, status, organizations, selectedOrgId, isManager, canAccessFinance,
+    login, signup, logout, selectOrg, refreshUser,
+  }), [user, status, organizations, selectedOrgId, isManager, canAccessFinance, login, signup, logout, selectOrg, refreshUser]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

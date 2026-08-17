@@ -30,7 +30,7 @@ public class AttendanceQueryService {
     private static final int STANDARD_SHIFT_MINUTES = 8 * 60;
     private static final int PARTIAL_DAY_THRESHOLD_MINUTES = 6 * 60;
 
-    private static final Set<String> MANAGER_ROLES = Set.of("MANAGER", "ADMIN", "PLATFORM_ADMIN");
+    private static final Set<String> MANAGER_ROLES = com.nforceone.nforcehq.common.Roles.MANAGER_UP;
 
     private final AttendanceRecordRepository attendanceRecordRepository;
     private final UserRepository userRepository;

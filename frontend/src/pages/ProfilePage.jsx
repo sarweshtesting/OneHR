@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
-import { apiFetch } from '../api/client';
+import { useEffect, useRef, useState } from 'react';
+import { apiFetch, apiUpload } from '../api/client';
 import { useApi } from '../hooks/useApi';
+import { useAuth } from '../context/AuthContext';
+import { roleLabel } from '../utils/roles';
+import AvatarCircle from '../components/AvatarCircle';
 
 function initialsOf(name) {
   return (name || '').split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('');
@@ -8,6 +11,7 @@ function initialsOf(name) {
 
 export default function ProfilePage() {
   const { data: profile, reload } = useApi('/api/profile');
+  const { refreshUser } = useAuth();
   const [form, setForm] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
@@ -17,6 +21,10 @@ export default function ProfilePage() {
   const [pwSubmitting, setPwSubmitting] = useState(false);
   const [pwError, setPwError] = useState('');
   const [pwSuccess, setPwSuccess] = useState('');
+
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [photoError, setPhotoError] = useState('');
+  const photoInputRef = useRef(null);
 
   useEffect(() => {
     if (profile) {
@@ -77,6 +85,39 @@ export default function ProfilePage() {
     }
   }
 
+  async function handlePhotoChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setPhotoError('');
+    setPhotoUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      await apiUpload('/api/profile/photo', formData);
+      await reload();
+      await refreshUser();
+    } catch (err) {
+      setPhotoError(err.message);
+    } finally {
+      setPhotoUploading(false);
+      if (photoInputRef.current) photoInputRef.current.value = '';
+    }
+  }
+
+  async function handleRemovePhoto() {
+    setPhotoError('');
+    setPhotoUploading(true);
+    try {
+      await apiFetch('/api/profile/photo', { method: 'DELETE' });
+      await reload();
+      await refreshUser();
+    } catch (err) {
+      setPhotoError(err.message);
+    } finally {
+      setPhotoUploading(false);
+    }
+  }
+
   if (!profile || !form) {
     return <section><div className="page-head"><h1>My Profile</h1></div></section>;
   }
@@ -88,10 +129,10 @@ export default function ProfilePage() {
       </div>
 
       <div className="profile-header">
-        <div className="avatar-circle">{initialsOf(profile.fullName)}</div>
+        <AvatarCircle photoUrl={profile.avatarPhotoDataUri} initials={initialsOf(profile.fullName)} />
         <div>
           <div className="name">{profile.fullName}</div>
-          <div className="sub">{profile.jobTitle || profile.role} · {profile.email}</div>
+          <div className="sub">{profile.jobTitle || roleLabel(profile.role)} · {profile.email}</div>
         </div>
       </div>
 
@@ -100,6 +141,21 @@ export default function ProfilePage() {
           <div className="panel">
             <div className="panel-head"><h2>Personal Info</h2></div>
             <div className="profile-panel-body">
+              <div className="photo-upload-row">
+                <AvatarCircle photoUrl={profile.avatarPhotoDataUri} initials={initialsOf(profile.fullName)} className="photo-upload-avatar" />
+                <div>
+                  <label className="file-picker-label">
+                    {photoUploading ? 'Uploading…' : (profile.avatarPhotoDataUri ? 'Change photo' : 'Upload photo')}
+                    <input ref={photoInputRef} type="file" accept="image/png,image/jpeg,image/webp" onChange={handlePhotoChange} disabled={photoUploading} hidden />
+                  </label>
+                  {profile.avatarPhotoDataUri && (
+                    <button type="button" className="photo-remove-link" onClick={handleRemovePhoto} disabled={photoUploading}>Remove photo</button>
+                  )}
+                  <div className="photo-upload-hint">PNG, JPEG or WEBP, up to 2MB</div>
+                </div>
+              </div>
+              {photoError && <div className="banner-error show">{photoError}</div>}
+
               <div className={'banner-error' + (saveError ? ' show' : '')}>{saveError}</div>
               <div className={'banner-success' + (saveSuccess ? ' show' : '')}>{saveSuccess}</div>
               <form onSubmit={handleSave}>
@@ -201,7 +257,7 @@ export default function ProfilePage() {
               <div className="profile-readonly-row"><span className="label">Job title</span><span className="value">{profile.jobTitle || '—'}</span></div>
               <div className="profile-readonly-row"><span className="label">Department</span><span className="value">{profile.departmentName || '—'}</span></div>
               <div className="profile-readonly-row"><span className="label">Manager</span><span className="value">{profile.managerName || '—'}</span></div>
-              <div className="profile-readonly-row"><span className="label">Role</span><span className="value">{profile.role.replace('_', ' ')}</span></div>
+              <div className="profile-readonly-row"><span className="label">Role</span><span className="value">{roleLabel(profile.role)}</span></div>
               <div className="profile-readonly-row"><span className="label">Hire date</span><span className="value">{profile.hireDate || '—'}</span></div>
             </div>
           </div>

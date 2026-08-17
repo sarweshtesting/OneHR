@@ -60,13 +60,13 @@ public class LeaveController {
     }
 
     @PostMapping("/api/leave-requests/{id}/approve")
-    @PreAuthorize("hasAnyRole('MANAGER','ADMIN','PLATFORM_ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER','HR_ADMIN','ADMIN','SUPER_ADMIN','PLATFORM_ADMIN')")
     public LeaveRequestView approveLeave(@AuthenticationPrincipal JwtPrincipal principal, @PathVariable UUID id) {
         return leaveService.approve(principal, id);
     }
 
     @PostMapping("/api/leave-requests/{id}/reject")
-    @PreAuthorize("hasAnyRole('MANAGER','ADMIN','PLATFORM_ADMIN')")
+    @PreAuthorize("hasAnyRole('MANAGER','HR_ADMIN','ADMIN','SUPER_ADMIN','PLATFORM_ADMIN')")
     public LeaveRequestView rejectLeave(@AuthenticationPrincipal JwtPrincipal principal, @PathVariable UUID id) {
         return leaveService.reject(principal, id);
     }

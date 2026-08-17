@@ -3,16 +3,21 @@ package com.nforceone.nforcehq.user;
 import com.nforceone.nforcehq.common.ApiException;
 import com.nforceone.nforcehq.org.DepartmentRepository;
 import com.nforceone.nforcehq.security.JwtPrincipal;
+import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class ProfileService {
+
+    private static final Set<String> ALLOWED_PHOTO_TYPES = Set.of("image/png", "image/jpeg", "image/webp");
+    private static final int MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
@@ -46,6 +51,37 @@ public class ProfileService {
         userRepository.save(user);
     }
 
+    @Transactional
+    public ProfileView uploadPhoto(JwtPrincipal principal, MultipartFile file) {
+        User user = findSelf(principal);
+        if (file.isEmpty()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Photo file is empty");
+        }
+        if (!ALLOWED_PHOTO_TYPES.contains(file.getContentType())) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Unsupported image type: " + file.getContentType());
+        }
+        if (file.getSize() > MAX_PHOTO_BYTES) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Photo must be 2MB or smaller");
+        }
+        try {
+            user.setAvatarPhoto(file.getBytes());
+            user.setAvatarContentType(file.getContentType());
+        } catch (Exception ex) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Could not read uploaded photo");
+        }
+        userRepository.save(user);
+        return toView(user);
+    }
+
+    @Transactional
+    public ProfileView deletePhoto(JwtPrincipal principal) {
+        User user = findSelf(principal);
+        user.setAvatarPhoto(null);
+        user.setAvatarContentType(null);
+        userRepository.save(user);
+        return toView(user);
+    }
+
     private User findSelf(JwtPrincipal principal) {
         return userRepository.findById(principal.userId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"));
@@ -63,7 +99,7 @@ public class ProfileService {
                 user.getId(), user.getFullName(), user.getEmail(), user.getRole().name(),
                 user.getPhone(), user.getDateOfBirth(), user.getBloodGroup(),
                 user.getEmployeeCode(), user.getJobTitle(), departmentName, managerName, user.getHireDate(),
-                user.getAvatarInitials(),
+                user.getAvatarInitials(), AvatarUtil.dataUri(user),
                 user.getEmergencyContactName(), user.getEmergencyContactRelationship(), user.getEmergencyContactPhone());
     }
 }

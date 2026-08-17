@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useApi } from '../hooks/useApi';
+import { roleLabel } from '../utils/roles';
 import {
   IconGrid, IconClock, IconCalendar, IconOrgChart, IconPeople,
   IconPayroll, IconClientTracking, IconAdmin, IconAuditLog,
@@ -27,7 +28,7 @@ function InertNavItem({ icon, children }) {
 }
 
 export default function Sidebar() {
-  const { user, logout } = useAuth();
+  const { user, logout, canAccessFinance } = useAuth();
   const { data: notifications } = useApi('/api/notifications');
   const unreadCount = (notifications || []).filter((n) => !n.read).length;
 
@@ -49,7 +50,9 @@ export default function Sidebar() {
       <NavItem to="/people" icon={<IconPeople />}>People</NavItem>
 
       <div className="nav-group-label">Finance &amp; Ops</div>
-      <NavItem to="/finance" icon={<IconPayroll />}>Finance</NavItem>
+      {canAccessFinance
+        ? <NavItem to="/finance" icon={<IconPayroll />}>Finance</NavItem>
+        : <InertNavItem icon={<IconPayroll />}>Finance</InertNavItem>}
       <InertNavItem icon={<IconClientTracking />}>Client Tracking</InertNavItem>
 
       <div className="nav-group-label">Governance</div>
@@ -60,7 +63,7 @@ export default function Sidebar() {
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <span className="role-pill">
             <span className="role-dot" />
-            <span>Signed in as {user?.role.replace('_', ' ')}</span>
+            <span>Signed in as {roleLabel(user?.role)}</span>
           </span>
           <button className="logout-link" onClick={logout}>Log out</button>
         </div>

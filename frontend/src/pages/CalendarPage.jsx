@@ -4,6 +4,7 @@ import { useApi } from '../hooks/useApi';
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const pad = (n) => String(n).padStart(2, '0');
 const toIso = (d) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const isCompOffType = (code) => code === 'COMP_OFF' || code === 'UNPAID';
 
 function buildMonthGrid(year, month) {
   const first = new Date(year, month, 1);
@@ -87,42 +88,37 @@ export default function CalendarPage() {
             const iso = toIso(date);
             const holiday = holidaysByDate.get(iso);
             const dayLeave = leaveByDate.get(iso) || [];
-            const compOffs = dayLeave.filter((e) => e.leaveTypeCode === 'COMP_OFF');
-            const otherLeave = dayLeave.filter((e) => e.leaveTypeCode !== 'COMP_OFF');
+            const compOffs = dayLeave.filter((e) => isCompOffType(e.leaveTypeCode));
+            const employeeLeave = dayLeave.filter((e) => !isCompOffType(e.leaveTypeCode));
             const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+
+            let eventClass = '';
+            let typeLabel = '';
+            if (holiday) { eventClass = 'cal-holiday'; typeLabel = 'Holiday'; }
+            else if (compOffs.length) { eventClass = 'cal-compoff'; typeLabel = 'Comp-off / Unpaid leave'; }
+            else if (employeeLeave.length) { eventClass = 'cal-leave'; typeLabel = 'Employee leave'; }
+            else if (isWeekend) { eventClass = 'cal-weekend'; typeLabel = 'Week-off'; }
+
+            const detailLines = [];
+            if (holiday) detailLines.push(holiday.name);
+            employeeLeave.forEach((e) => detailLines.push(`${e.userName} — ${e.leaveTypeName || 'Leave'}`));
+            compOffs.forEach((e) => detailLines.push(`${e.userName} — ${e.leaveTypeName || 'Comp-off'}`));
+            if (isWeekend && !detailLines.length) detailLines.push('Weekend — no scheduled work');
 
             return (
               <div
                 key={i}
-                className={'calendar-cell' + (outside ? ' outside' : '') + (iso === todayIso ? ' today' : '') + (isWeekend ? ' weekend' : '')}
-                title={isWeekend && !holiday ? 'Week-off' : undefined}
+                className={'calendar-cell' + (outside ? ' outside' : '') + (iso === todayIso ? ' today' : '') + (eventClass ? ' ' + eventClass : '')}
               >
                 <div className="day-num">{date.getDate()}</div>
-                {isWeekend && !holiday && <div className="calendar-event weekoff">Week-off</div>}
-                {holiday && (
-                  <div className="calendar-event holiday" title={holiday.name}>{holiday.name}</div>
-                )}
-                {otherLeave.slice(0, 2).map((entry) => (
-                  <div
-                    className="calendar-event leave"
-                    key={entry.userId + entry.startDate}
-                    title={`${entry.userName} — ${entry.leaveTypeName || 'Leave'} (${entry.startDate} – ${entry.endDate})`}
-                  >
-                    {entry.userName.split(' ')[0]}
-                  </div>
-                ))}
-                {compOffs.slice(0, 2).map((entry) => (
-                  <div
-                    className="calendar-event compoff"
-                    key={'comp-' + entry.userId + entry.startDate}
-                    title={`${entry.userName} — Comp-off (${entry.startDate} – ${entry.endDate})`}
-                  >
-                    {entry.userName.split(' ')[0]} · Comp-off
-                  </div>
-                ))}
-                {dayLeave.length > 4 && (
-                  <div className="calendar-event leave" title={dayLeave.slice(4).map((e) => e.userName).join(', ')}>
-                    +{dayLeave.length - 4} more
+                {typeLabel && <div className="cell-badge">{typeLabel}</div>}
+                {detailLines.length > 0 && (
+                  <div className="cell-tooltip">
+                    <div className="cell-tooltip-type">{typeLabel}</div>
+                    {detailLines.slice(0, 6).map((line, idx) => (
+                      <div className="cell-tooltip-line" key={idx}>{line}</div>
+                    ))}
+                    {detailLines.length > 6 && <div className="cell-tooltip-line">+{detailLines.length - 6} more</div>}
                   </div>
                 )}
               </div>
@@ -131,10 +127,10 @@ export default function CalendarPage() {
         </div>
 
         <div className="calendar-legend">
-          <div><span style={{ background: 'var(--red-soft)' }} />Holiday</div>
-          <div><span style={{ background: 'var(--surface-sunken)' }} />Employee leave</div>
-          <div><span style={{ background: 'var(--black)' }} />Comp-off</div>
-          <div><span style={{ background: 'var(--surface-alt)', border: '1px dashed var(--border-strong)' }} />Week-off</div>
+          <div><span className="legend-swatch cal-holiday" />Holiday</div>
+          <div><span className="legend-swatch cal-leave" />Employee leave</div>
+          <div><span className="legend-swatch cal-compoff" />Comp-off / Unpaid</div>
+          <div><span className="legend-swatch cal-weekend" />Week-off</div>
         </div>
       </div>
     </section>

@@ -61,7 +61,7 @@ public class AuthService {
         user.setFullName(request.adminFullName().trim());
         user.setEmail(email);
         user.setPasswordHash(passwordEncoder.encode(request.password()));
-        user.setRole(Role.ADMIN);
+        user.setRole(Role.SUPER_ADMIN);
         user.setAvatarInitials(initialsOf(request.adminFullName()));
         user.setActive(true);
         userRepository.save(user);
@@ -103,6 +103,6 @@ public class AuthService {
                     .orElse(null);
         }
         return new UserSummary(user.getId(), user.getFullName(), user.getEmail(),
-                user.getRole().name(), user.getJobTitle(), user.getOrganizationId(), orgName);
+                user.getRole().name(), user.getJobTitle(), user.getOrganizationId(), orgName, AvatarUtil.dataUri(user));
     }
 }

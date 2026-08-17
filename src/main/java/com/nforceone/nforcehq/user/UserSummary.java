@@ -9,5 +9,6 @@ public record UserSummary(
         String role,
         String jobTitle,
         UUID orgId,
-        String orgName) {
+        String orgName,
+        String avatarPhotoDataUri) {
 }
