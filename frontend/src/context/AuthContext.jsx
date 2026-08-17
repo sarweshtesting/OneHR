@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import {
-  apiFetch, login as apiLogin, getToken, setToken, clearToken,
+  apiFetch, login as apiLogin, signup as apiSignup, getToken, setToken, clearToken,
   getSelectedOrg, setSelectedOrg, clearSelectedOrg, onUnauthorized,
 } from '../api/client';
 
@@ -78,6 +78,12 @@ export function AuthProvider({ children }) {
     await afterAuth(userData);
   }, [afterAuth]);
 
+  const signup = useCallback(async (orgName, adminFullName, adminEmail, password) => {
+    const { token, user: userData } = await apiSignup(orgName, adminFullName, adminEmail, password);
+    setToken(token);
+    await afterAuth(userData);
+  }, [afterAuth]);
+
   const selectOrg = useCallback((orgId) => {
     setSelectedOrg(orgId);
     setSelectedOrgIdState(orgId);
@@ -87,8 +93,8 @@ export function AuthProvider({ children }) {
 
   const value = useMemo(() => ({
     user, status, organizations, selectedOrgId, isManager,
-    login, logout, selectOrg,
-  }), [user, status, organizations, selectedOrgId, isManager, login, logout, selectOrg]);
+    login, signup, logout, selectOrg,
+  }), [user, status, organizations, selectedOrgId, isManager, login, signup, logout, selectOrg]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

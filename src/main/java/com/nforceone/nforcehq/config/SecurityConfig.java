@@ -52,7 +52,8 @@ public class SecurityConfig {
                         // to /error, which anyRequest().authenticated() below then denies — turning a
                         // server bug into a misleading, hard-to-debug blank 403 instead of a real 500.
                         .dispatcherTypeMatchers(jakarta.servlet.DispatcherType.ERROR).permitAll()
-                        .requestMatchers("/api/auth/login", "/actuator/health", "/actuator/info",
+                        .requestMatchers("/api/auth/login", "/api/auth/signup", "/api/auth/forgot-password",
+                                "/api/auth/reset-password", "/actuator/health", "/actuator/info",
                                 "/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

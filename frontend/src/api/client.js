@@ -51,15 +51,32 @@ export async function apiFetch(path, opts = {}) {
   return text ? JSON.parse(text) : null;
 }
 
-export async function login(email, password) {
-  const res = await fetch(API_BASE + '/api/auth/login', {
+/** Unauthenticated POST — for login/signup/forgot/reset, none of which have a token yet. */
+async function publicPost(path, payload) {
+  const res = await fetch(API_BASE + path, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify(payload),
   });
   const body = await res.json().catch(() => ({}));
-  if (!res.ok) throw new Error(body.message || 'Invalid email or password');
+  if (!res.ok) throw new Error(body.message || 'Request failed');
   return body;
+}
+
+export async function login(email, password) {
+  return publicPost('/api/auth/login', { email, password });
+}
+
+export async function signup(orgName, adminFullName, adminEmail, password) {
+  return publicPost('/api/auth/signup', { orgName, adminFullName, adminEmail, password });
+}
+
+export async function forgotPassword(email) {
+  return publicPost('/api/auth/forgot-password', { email });
+}
+
+export async function resetPassword(token, newPassword) {
+  return publicPost('/api/auth/reset-password', { token, newPassword });
 }
 
 export async function apiFetchBlob(path) {
