@@ -9,7 +9,6 @@ public enum Role {
     EMPLOYEE,
     MANAGER,
     HR_ADMIN,
-    ADMIN,
     SUPER_ADMIN,
     PLATFORM_ADMIN
 }

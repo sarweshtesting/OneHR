@@ -42,7 +42,7 @@ public class AuthService {
         return new LoginResponse(token, toSummary(user));
     }
 
-    /** Self-service workspace creation: signing up creates a brand-new organization and its first ADMIN user. */
+    /** Self-service workspace creation: signing up creates a brand-new organization and its first SUPER_ADMIN user. */
     @Transactional
     public LoginResponse signup(SignupRequest request) {
         String email = request.adminEmail().trim().toLowerCase();

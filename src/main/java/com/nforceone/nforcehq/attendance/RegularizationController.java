@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/regularizations")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('MANAGER','HR_ADMIN','ADMIN','SUPER_ADMIN','PLATFORM_ADMIN')")
+@PreAuthorize("hasAnyRole('MANAGER','HR_ADMIN','SUPER_ADMIN','PLATFORM_ADMIN')")
 public class RegularizationController {
 
     private final RegularizationService regularizationService;

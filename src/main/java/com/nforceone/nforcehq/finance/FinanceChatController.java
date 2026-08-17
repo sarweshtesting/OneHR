@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/finance/chat")
 @RequiredArgsConstructor
-@PreAuthorize("hasAnyRole('MANAGER','HR_ADMIN','ADMIN','SUPER_ADMIN','PLATFORM_ADMIN')")
+@PreAuthorize("hasAnyRole('MANAGER','HR_ADMIN','SUPER_ADMIN','PLATFORM_ADMIN')")
 public class FinanceChatController {
 
     private final FinanceChatService financeChatService;
