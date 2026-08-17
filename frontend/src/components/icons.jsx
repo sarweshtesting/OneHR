@@ -78,6 +78,9 @@ export const IconUser = () => (
 export const IconStar = () => (
   <svg {...base}><path d="m12 3 2.6 5.6 6.1.6-4.6 4.1 1.3 6-5.4-3.2-5.4 3.2 1.3-6-4.6-4.1 6.1-.6Z" /></svg>
 );
+export const IconPanelToggle = () => (
+  <svg {...base}><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M9 4v16" /></svg>
+);
 export const IconPaperclip = () => (
   <svg {...base}><path d="M21 11.5 12.5 20a4.5 4.5 0 0 1-6.4-6.4l8-8a3 3 0 0 1 4.3 4.3l-7.6 7.6a1.5 1.5 0 0 1-2.1-2.1l6.9-6.9" /></svg>
 );

@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useAttendanceToday } from '../hooks/useAttendanceToday';
+import { useAttendance } from '../context/AttendanceContext';
 import { useElapsedMinutes } from '../hooks/useElapsedMinutes';
 import { useApi } from '../hooks/useApi';
 import { useClock } from '../hooks/useClock';
@@ -15,7 +15,7 @@ export default function OverviewPage() {
   const { user, isManager } = useAuth();
   const navigate = useNavigate();
   const { timeString } = useClock();
-  const { attendance, clockIn, clockOut } = useAttendanceToday();
+  const { attendance, clockIn, clockOut } = useAttendance();
   const elapsedMinutes = useElapsedMinutes(attendance && !attendance.clockOutAt ? attendance.clockInAt : null);
 
   const { data: team } = useApi('/api/team/today-status');
