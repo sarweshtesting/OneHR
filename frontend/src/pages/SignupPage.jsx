@@ -34,7 +34,7 @@ export default function SignupPage() {
         <div className="login-card">
           <div className="login-brand">
             <div className="brand-mark" />
-            <div className="brand-name" style={{ color: 'var(--ink)' }}>nForce<span>HQ</span></div>
+            <div className="brand-name" style={{ color: 'var(--ink)' }}>NEX<span>ORA</span></div>
           </div>
           <div className="login-title">Create your company workspace</div>
           <div className={'banner-error' + (error ? ' show' : '')}>{error}</div>

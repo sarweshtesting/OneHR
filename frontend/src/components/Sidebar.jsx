@@ -1,15 +1,18 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useApi } from '../hooks/useApi';
 import {
   IconGrid, IconClock, IconCalendar, IconOrgChart, IconPeople,
   IconPayroll, IconClientTracking, IconChat, IconAdmin, IconAuditLog,
+  IconBell, IconCalendarDays,
 } from './icons';
 
-function NavItem({ to, icon, children }) {
+function NavItem({ to, icon, children, badge }) {
   return (
     <NavLink to={to} className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}>
       {icon}
       {children}
+      {badge > 0 && <span className="nav-badge">{badge}</span>}
     </NavLink>
   );
 }
@@ -25,19 +28,23 @@ function InertNavItem({ icon, children }) {
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
+  const { data: notifications } = useApi('/api/notifications');
+  const unreadCount = (notifications || []).filter((n) => !n.read).length;
 
   return (
     <nav className="sidebar">
       <div className="brand">
         <div className="brand-mark" />
-        <div className="brand-name">nForce<span>HQ</span></div>
+        <div className="brand-name">NEX<span>ORA</span></div>
       </div>
 
       <div className="nav-group-label">Workspace</div>
       <NavItem to="/overview" icon={<IconGrid />}>Overview</NavItem>
       <NavItem to="/attendance" icon={<IconClock />}>Attendance</NavItem>
       <NavItem to="/leave" icon={<IconCalendar />}>Leave</NavItem>
-      <InertNavItem icon={<IconOrgChart />}>Org Chart</InertNavItem>
+      <NavItem to="/calendar" icon={<IconCalendarDays />}>Calendar</NavItem>
+      <NavItem to="/notifications" icon={<IconBell />} badge={unreadCount}>Notifications</NavItem>
+      <NavItem to="/org-hierarchy" icon={<IconOrgChart />}>Org Hierarchy</NavItem>
       <InertNavItem icon={<IconPeople />}>People</InertNavItem>
 
       <div className="nav-group-label">Finance &amp; Ops</div>

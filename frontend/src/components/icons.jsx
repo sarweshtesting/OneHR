@@ -60,3 +60,18 @@ export const IconRegularization = () => (
 export const IconTeamDirectory = () => (
   <svg {...base}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6" /></svg>
 );
+export const IconCalendarDays = () => (
+  <svg {...base}><rect x="3" y="4" width="18" height="17" rx="2" /><path d="M3 9h18M8 2v4M16 2v4" /><circle cx="8" cy="14" r="1.1" fill="currentColor" stroke="none" /><circle cx="12" cy="14" r="1.1" fill="currentColor" stroke="none" /><circle cx="16" cy="14" r="1.1" fill="currentColor" stroke="none" /></svg>
+);
+export const IconChevronDown = () => (
+  <svg {...base}><path d="m6 9 6 6 6-6" /></svg>
+);
+export const IconLogout = () => (
+  <svg {...base}><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" /><path d="m16 17 5-5-5-5" /><path d="M21 12H9" /></svg>
+);
+export const IconHelp = () => (
+  <svg {...base}><circle cx="12" cy="12" r="9" /><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .8-1 1.7" /><path d="M12 17h.01" /></svg>
+);
+export const IconUser = () => (
+  <svg {...base}><circle cx="12" cy="8" r="3.6" /><path d="M4.5 20c0-4.1 3.4-7 7.5-7s7.5 2.9 7.5 7" /></svg>
+);

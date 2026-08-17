@@ -6,6 +6,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Table;
+import java.time.LocalDate;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
@@ -58,4 +59,24 @@ public class User extends BaseEntity {
 
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
+
+    @Column(name = "blood_group")
+    private String bloodGroup;
+
+    private String phone;
+
+    @Column(name = "date_of_birth")
+    private LocalDate dateOfBirth;
+
+    @Column(name = "hire_date")
+    private LocalDate hireDate;
+
+    @Column(name = "emergency_contact_name")
+    private String emergencyContactName;
+
+    @Column(name = "emergency_contact_relationship")
+    private String emergencyContactRelationship;
+
+    @Column(name = "emergency_contact_phone")
+    private String emergencyContactPhone;
 }

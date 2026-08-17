@@ -30,7 +30,7 @@ export default function ForgotPasswordPage() {
         <div className="login-card">
           <div className="login-brand">
             <div className="brand-mark" />
-            <div className="brand-name" style={{ color: 'var(--ink)' }}>nForce<span>HQ</span></div>
+            <div className="brand-name" style={{ color: 'var(--ink)' }}>NEX<span>ORA</span></div>
           </div>
           <div className="login-title">Reset your password</div>
 

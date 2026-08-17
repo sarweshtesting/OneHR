@@ -2,6 +2,7 @@ package com.nforceone.nforcehq.attendance;
 
 import com.nforceone.nforcehq.common.ApiException;
 import com.nforceone.nforcehq.common.ApprovalScope;
+import com.nforceone.nforcehq.notification.NotificationService;
 import com.nforceone.nforcehq.org.Organization;
 import com.nforceone.nforcehq.org.OrganizationRepository;
 import com.nforceone.nforcehq.security.JwtPrincipal;
@@ -28,6 +29,7 @@ public class RegularizationService {
     private final AttendanceRecordRepository attendanceRecordRepository;
     private final UserRepository userRepository;
     private final OrganizationRepository organizationRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public RegularizationView submit(JwtPrincipal principal, SubmitRegularizationRequest request) {
@@ -42,6 +44,14 @@ public class RegularizationService {
         entity.setReason(request.reason());
         entity.setStatus(RegularizationStatus.PENDING);
         regularizationRepository.save(entity);
+
+        User requester = userRepository.findById(principal.userId()).orElse(null);
+        if (requester != null && requester.getManagerId() != null) {
+            notificationService.notify(organizationId, requester.getManagerId(), "REGULARIZATION_SUBMITTED",
+                    "New regularization request",
+                    principal.name() + " requested attendance regularization for " + request.workDate(),
+                    entity.getId());
+        }
 
         return RegularizationView.from(entity, principal.name());
     }
@@ -96,6 +106,11 @@ public class RegularizationService {
         request.setResultingAttendanceRecordId(record.getId());
         regularizationRepository.save(request);
 
+        notificationService.notify(request.getOrganizationId(), request.getUserId(), "REGULARIZATION_APPROVED",
+                "Regularization request approved",
+                "Your attendance regularization for " + request.getWorkDate() + " was approved",
+                request.getId());
+
         return RegularizationView.from(request, resolveName(request.getUserId()));
     }
 
@@ -106,6 +121,12 @@ public class RegularizationService {
         request.setApproverId(principal.userId());
         request.setDecidedAt(Instant.now());
         regularizationRepository.save(request);
+
+        notificationService.notify(request.getOrganizationId(), request.getUserId(), "REGULARIZATION_REJECTED",
+                "Regularization request rejected",
+                "Your attendance regularization for " + request.getWorkDate() + " was rejected",
+                request.getId());
+
         return RegularizationView.from(request, resolveName(request.getUserId()));
     }
 

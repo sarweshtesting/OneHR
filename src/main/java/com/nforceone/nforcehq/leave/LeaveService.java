@@ -1,6 +1,7 @@
 package com.nforceone.nforcehq.leave;
 
 import com.nforceone.nforcehq.common.ApiException;
+import com.nforceone.nforcehq.notification.NotificationService;
 import com.nforceone.nforcehq.security.JwtPrincipal;
 import com.nforceone.nforcehq.user.User;
 import com.nforceone.nforcehq.user.UserRepository;
@@ -26,6 +27,7 @@ public class LeaveService {
     private final LeaveBalanceRepository leaveBalanceRepository;
     private final LeaveRequestRepository leaveRequestRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public List<LeaveTypeSummary> listTypes(JwtPrincipal principal) {
         UUID organizationId = requireOrganization(principal);
@@ -85,6 +87,14 @@ public class LeaveService {
         leaveRequest.setStatus(LeaveRequestStatus.PENDING);
         leaveRequestRepository.save(leaveRequest);
 
+        User requester = userRepository.findById(principal.userId()).orElse(null);
+        if (requester != null && requester.getManagerId() != null) {
+            notificationService.notify(organizationId, requester.getManagerId(), "LEAVE_SUBMITTED",
+                    "New leave request",
+                    principal.name() + " requested " + daysRequested + " day(s) of " + leaveType.getName(),
+                    leaveRequest.getId());
+        }
+
         return new LeaveRequestView(leaveRequest.getId(), principal.name(), leaveType.getName(), leaveRequest.getStartDate(),
                 leaveRequest.getEndDate(), leaveRequest.getDaysRequested(), leaveRequest.getStatus().name());
     }
@@ -129,6 +139,11 @@ public class LeaveService {
         request.setDecidedAt(java.time.Instant.now());
         leaveRequestRepository.save(request);
 
+        notificationService.notify(request.getOrganizationId(), request.getUserId(), "LEAVE_APPROVED",
+                "Leave request approved",
+                "Your " + leaveType.getName() + " request for " + request.getDaysRequested() + " day(s) was approved",
+                request.getId());
+
         return new LeaveRequestView(request.getId(), resolveName(request.getUserId()), leaveType.getName(),
                 request.getStartDate(), request.getEndDate(), request.getDaysRequested(), request.getStatus().name());
     }
@@ -142,6 +157,11 @@ public class LeaveService {
         request.setApproverId(principal.userId());
         request.setDecidedAt(java.time.Instant.now());
         leaveRequestRepository.save(request);
+
+        notificationService.notify(request.getOrganizationId(), request.getUserId(), "LEAVE_REJECTED",
+                "Leave request rejected",
+                "Your " + (leaveType != null ? leaveType.getName() : "leave") + " request was rejected",
+                request.getId());
 
         return new LeaveRequestView(request.getId(), resolveName(request.getUserId()),
                 leaveType != null ? leaveType.getName() : "Leave",

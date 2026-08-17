@@ -34,7 +34,7 @@ export default function LoginPage() {
         <div className="login-card">
           <div className="login-brand">
             <div className="brand-mark" />
-            <div className="brand-name" style={{ color: 'var(--ink)' }}>nForce<span>HQ</span></div>
+            <div className="brand-name" style={{ color: 'var(--ink)' }}>NEX<span>ORA</span></div>
           </div>
           <div className="login-title">Sign in to your workspace</div>
           {resetSuccess && <div className="banner-success show">Your password was updated — sign in with your new password.</div>}

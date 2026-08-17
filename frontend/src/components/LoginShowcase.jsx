@@ -27,7 +27,7 @@ export default function LoginShowcase() {
   return (
     <div className="login-showcase">
       <div className="login-showcase-eyebrow">Live preview — not a screenshot</div>
-      <h1 className="login-showcase-title">This is nForceHQ, running right now.</h1>
+      <h1 className="login-showcase-title">This is NEXORA, running right now.</h1>
       <p className="login-showcase-sub">The shift tracker below updates against your actual clock — the same widget every signed-in employee sees on their Overview page.</p>
 
       <div className="login-showcase-clock">

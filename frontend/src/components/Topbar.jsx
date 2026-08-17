@@ -1,10 +1,8 @@
 import { useAuth } from '../context/AuthContext';
 import { useClock } from '../hooks/useClock';
-import { IconSearch, IconBell } from './icons';
-
-function initialsOf(name) {
-  return name.split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('');
-}
+import { IconSearch } from './icons';
+import NotificationBell from './NotificationBell';
+import UserMenu from './UserMenu';
 
 export default function Topbar() {
   const { user, organizations, selectedOrgId, selectOrg } = useAuth();
@@ -45,17 +43,8 @@ export default function Topbar() {
 
       <div className="topbar-right">
         <div className="mini-clock"><span className="dot" /><span>{timeString} IST</span></div>
-        <button className="icon-btn" title="Notifications">
-          <IconBell />
-          <span className="ping" />
-        </button>
-        <div className="user-chip">
-          <div className="avatar-circle">{user ? initialsOf(user.name) : ''}</div>
-          <div className="user-meta">
-            <div className="name">{user?.name}</div>
-            <div className="role">{user?.role.replace('_', ' ')}{currentOrgName ? ` · ${currentOrgName}` : ''}</div>
-          </div>
-        </div>
+        <NotificationBell />
+        <UserMenu orgName={currentOrgName} />
       </div>
     </header>
   );

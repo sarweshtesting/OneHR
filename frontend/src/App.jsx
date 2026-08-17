@@ -8,6 +8,11 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import OverviewPage from './pages/OverviewPage';
 import AttendancePage from './pages/AttendancePage';
 import LeavePage from './pages/LeavePage';
+import ProfilePage from './pages/ProfilePage';
+import NotificationsPage from './pages/NotificationsPage';
+import OrgHierarchyPage from './pages/OrgHierarchyPage';
+import CalendarPage from './pages/CalendarPage';
+import HelpPage from './pages/HelpPage';
 
 export default function App() {
   return (
@@ -21,6 +26,11 @@ export default function App() {
           <Route path="/overview" element={<OverviewPage />} />
           <Route path="/attendance" element={<AttendancePage />} />
           <Route path="/leave" element={<LeavePage />} />
+          <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/org-hierarchy" element={<OrgHierarchyPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/help" element={<HelpPage />} />
           <Route path="/" element={<Navigate to="/overview" replace />} />
         </Route>
       </Route>
