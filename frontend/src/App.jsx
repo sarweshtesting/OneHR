@@ -17,6 +17,7 @@ import HelpPage from './pages/HelpPage';
 import AppraisalPage from './pages/AppraisalPage';
 import PeoplePage from './pages/PeoplePage';
 import FinanceChatPage from './pages/FinanceChatPage';
+import PayslipsPage from './pages/PayslipsPage';
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/org-hierarchy" element={<OrgHierarchyPage />} />
           <Route path="/appraisal" element={<AppraisalPage />} />
           <Route path="/people" element={<PeoplePage />} />
+          <Route path="/payslips" element={<PayslipsPage />} />
           <Route element={<RequireFinanceAccess />}>
             <Route path="/finance" element={<FinanceChatPage />} />
           </Route>

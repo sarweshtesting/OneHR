@@ -1,12 +1,20 @@
 import { useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { roleLabel } from '../utils/roles';
 import {
   IconGrid, IconClock, IconCalendar, IconOrgChart, IconPeople,
-  IconPayroll, IconClientTracking, IconAdmin, IconAuditLog,
+  IconPayroll, IconClientTracking, IconAdmin, IconAuditLog, IconChat,
   IconCalendarDays, IconStar, IconChevronDown, IconPanelToggle,
+  IconSun, IconMoon, IconAuto,
 } from './icons';
+
+const THEME_OPTIONS = [
+  { value: 'light', label: 'Light', icon: <IconSun /> },
+  { value: 'dark', label: 'Dark', icon: <IconMoon /> },
+  { value: 'auto', label: 'Auto', icon: <IconAuto /> },
+];
 
 function NavItem({ to, icon, children, badge }) {
   return (
@@ -65,7 +73,8 @@ function NavGroup({ label, icon, children }) {
 }
 
 export default function Sidebar() {
-  const { user, logout, canAccessFinance } = useAuth();
+  const { user, canAccessFinance } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('nexora_sidebar_collapsed') === '1');
 
   function toggleCollapsed() {
@@ -105,9 +114,10 @@ export default function Sidebar() {
         </NavGroup>
 
         <NavGroup label="Finance &amp; Ops" icon={<IconPayroll />}>
+          <NavItem to="/payslips" icon={<IconPayroll />}>Payslips</NavItem>
           {canAccessFinance
-            ? <NavItem to="/finance" icon={<IconPayroll />}>Finance</NavItem>
-            : <InertNavItem icon={<IconPayroll />}>Finance</InertNavItem>}
+            ? <NavItem to="/finance" icon={<IconChat />}>Finance chat</NavItem>
+            : <InertNavItem icon={<IconChat />}>Finance chat</InertNavItem>}
           <InertNavItem icon={<IconClientTracking />}>Client Tracking</InertNavItem>
         </NavGroup>
 
@@ -123,7 +133,21 @@ export default function Sidebar() {
             <span className="role-dot" />
             <span>Signed in as {roleLabel(user?.role)}</span>
           </span>
-          <button className="logout-link" onClick={logout}>Log out</button>
+        </div>
+        <div className="theme-switch" role="group" aria-label="Display theme">
+          {THEME_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              type="button"
+              className={'theme-switch-btn' + (theme === opt.value ? ' active' : '')}
+              onClick={() => setTheme(opt.value)}
+              title={opt.label}
+              aria-pressed={theme === opt.value}
+            >
+              {opt.icon}
+              <span className="label">{opt.label}</span>
+            </button>
+          ))}
         </div>
       </div>
     </nav>
