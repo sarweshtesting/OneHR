@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
+import BackButton from '../components/BackButton';
 
 const DOW = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const pad = (n) => String(n).padStart(2, '0');
@@ -72,7 +73,10 @@ export default function CalendarPage() {
   return (
     <section>
       <div className="page-head">
-        <h1>Calendar</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <BackButton />
+          <h1>Calendar</h1>
+        </div>
       </div>
 
       <div className="panel" style={{ padding: 20 }}>

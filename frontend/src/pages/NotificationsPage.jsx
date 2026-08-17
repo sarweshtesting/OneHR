@@ -3,6 +3,7 @@ import { apiFetch } from '../api/client';
 import { useApi } from '../hooks/useApi';
 import { fmtRelativeTime } from '../utils/format';
 import { IconCheck, IconLeaveType, IconRegularization, IconWarningTriangle } from '../components/icons';
+import BackButton from '../components/BackButton';
 
 function iconFor(type) {
   if (type.endsWith('APPROVED')) return <IconCheck />;
@@ -42,7 +43,10 @@ export default function NotificationsPage() {
   return (
     <section>
       <div className="page-head">
-        <h1>Notifications</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <BackButton />
+          <h1>Notifications</h1>
+        </div>
         {unreadCount > 0 && <button className="btn-mini primary" onClick={markAllRead}>Mark all as read</button>}
       </div>
 

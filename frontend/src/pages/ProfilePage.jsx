@@ -4,6 +4,7 @@ import { useApi } from '../hooks/useApi';
 import { useAuth } from '../context/AuthContext';
 import { roleLabel } from '../utils/roles';
 import AvatarCircle from '../components/AvatarCircle';
+import BackButton from '../components/BackButton';
 
 function initialsOf(name) {
   return (name || '').split(' ').filter(Boolean).slice(0, 2).map((p) => p[0].toUpperCase()).join('');
@@ -119,13 +120,16 @@ export default function ProfilePage() {
   }
 
   if (!profile || !form) {
-    return <section><div className="page-head"><h1>My Profile</h1></div></section>;
+    return <section><div className="page-head"><div style={{ display: 'flex', alignItems: 'center', gap: 10 }}><BackButton /><h1>My Profile</h1></div></div></section>;
   }
 
   return (
     <section>
       <div className="page-head">
-        <h1>My Profile</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <BackButton />
+          <h1>My Profile</h1>
+        </div>
       </div>
 
       <div className="profile-header">

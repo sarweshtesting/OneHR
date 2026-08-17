@@ -5,6 +5,7 @@ import { apiFetchBlob } from '../api/client';
 import Donut from '../components/Donut';
 import Heatmap from '../components/Heatmap';
 import { IconCheck, IconClock } from '../components/icons';
+import BackButton from '../components/BackButton';
 import { currentMonthParam, fmtTime, fmtHoursMinutes } from '../utils/format';
 
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
@@ -48,7 +49,10 @@ export default function AttendancePage() {
   return (
     <section>
       <div className="page-head">
-        <h1>Attendance</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <BackButton />
+          <h1>Attendance</h1>
+        </div>
         <div className="date">{MONTH_NAMES[new Date().getMonth()]} {new Date().getFullYear()}</div>
       </div>
 
