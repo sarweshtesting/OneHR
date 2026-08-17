@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
+import { useAuth } from '../context/AuthContext';
 import { roleLabel } from '../utils/roles';
 import { IconChevronDown } from '../components/icons';
+import AddPersonModal from '../components/AddPersonModal';
 
 function groupByDepartment(people) {
   const groups = new Map();
@@ -14,8 +16,10 @@ function groupByDepartment(people) {
 }
 
 export default function PeoplePage() {
-  const { data: people } = useApi('/api/people');
+  const { canManagePeople } = useAuth();
+  const { data: people, reload } = useApi('/api/people');
   const [collapsed, setCollapsed] = useState(() => new Set());
+  const [addOpen, setAddOpen] = useState(false);
 
   const groups = useMemo(() => (people ? groupByDepartment(people) : []), [people]);
 
@@ -31,8 +35,13 @@ export default function PeoplePage() {
     <section>
       <div className="page-head">
         <h1>People</h1>
-        <div className="date">{people?.length || 0} people</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div className="date">{people?.length || 0} people</div>
+          {canManagePeople && <button type="button" className="btn-mini primary" onClick={() => setAddOpen(true)}>+ Add person</button>}
+        </div>
       </div>
+
+      {addOpen && <AddPersonModal onClose={() => setAddOpen(false)} onCreated={reload} />}
 
       {!people?.length && <div className="panel"><div className="panel-empty">No one to show yet</div></div>}
 

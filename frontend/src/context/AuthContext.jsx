@@ -3,7 +3,7 @@ import {
   apiFetch, login as apiLogin, signup as apiSignup, getToken, setToken, clearToken,
   getSelectedOrg, setSelectedOrg, clearSelectedOrg, onUnauthorized,
 } from '../api/client';
-import { isManagerUp, canAccessFinance as roleCanAccessFinance } from '../utils/roles';
+import { isManagerUp, canAccessFinance as roleCanAccessFinance, canManagePeople as roleCanManagePeople } from '../utils/roles';
 
 const AuthContext = createContext(null);
 
@@ -100,11 +100,12 @@ export function AuthProvider({ children }) {
 
   const isManager = useMemo(() => user && isManagerUp(user.role), [user]);
   const canAccessFinance = useMemo(() => user && roleCanAccessFinance(user.role), [user]);
+  const canManagePeople = useMemo(() => user && roleCanManagePeople(user.role), [user]);
 
   const value = useMemo(() => ({
-    user, status, organizations, selectedOrgId, isManager, canAccessFinance,
+    user, status, organizations, selectedOrgId, isManager, canAccessFinance, canManagePeople,
     login, signup, logout, selectOrg, refreshUser,
-  }), [user, status, organizations, selectedOrgId, isManager, canAccessFinance, login, signup, logout, selectOrg, refreshUser]);
+  }), [user, status, organizations, selectedOrgId, isManager, canAccessFinance, canManagePeople, login, signup, logout, selectOrg, refreshUser]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
