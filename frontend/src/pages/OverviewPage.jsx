@@ -11,6 +11,7 @@ import TeamTodayPanel from '../components/overview/TeamTodayPanel';
 import AttentionPanel from '../components/overview/AttentionPanel';
 import { IconClockIn, IconClockOut, IconLeaveType, IconRegularization, IconPayroll, IconTeamDirectory, IconChevronDown } from '../components/icons';
 import { fmtTime, fmtDuration, fmtDateRange } from '../utils/format';
+import RegularizeModal from '../components/RegularizeModal';
 
 const ANNOUNCEMENTS = [
   { tag: 'Policy update', title: 'New WFH tagging rule effective Sept 1', sub: 'HR · 2 days ago' },
@@ -28,6 +29,7 @@ export default function OverviewPage() {
   const { attendance, clockIn, clockOut } = useAttendance();
   const elapsedMinutes = useElapsedMinutes(attendance && !attendance.clockOutAt ? attendance.clockInAt : null);
   const [announceOpen, setAnnounceOpen] = useState(true);
+  const [regularizeOpen, setRegularizeOpen] = useState(false);
 
   const { data: team } = useApi('/api/team/today-status');
   const { data: upcomingLeave } = useApi('/api/leave/team-calendar');
@@ -123,16 +125,18 @@ export default function OverviewPage() {
         <button className="qa-btn" onClick={() => navigate('/leave')}>
           <div className="qa-ic accent"><IconLeaveType /></div>Apply for leave
         </button>
-        <button className="qa-btn" onClick={() => navigate('/attendance')}>
+        <button className="qa-btn" onClick={() => setRegularizeOpen(true)}>
           <div className="qa-ic"><IconRegularization /></div>Regularize attendance
         </button>
-        <button className="qa-btn" onClick={() => navigate('/attendance')}>
+        <button className="qa-btn" onClick={() => navigate('/payslips')}>
           <div className="qa-ic"><IconPayroll /></div>View payslip
         </button>
-        <button className="qa-btn" onClick={() => navigate('/attendance')}>
+        <button className="qa-btn" onClick={() => navigate('/people')}>
           <div className="qa-ic"><IconTeamDirectory /></div>Team directory
         </button>
       </div>
+
+      {regularizeOpen && <RegularizeModal onClose={() => setRegularizeOpen(false)} />}
 
       {isManager && stats && <StatsRow stats={stats} />}
 
