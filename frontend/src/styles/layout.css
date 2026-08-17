@@ -72,11 +72,17 @@
 .role-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--on-black-faint); padding-top: 10px; font-family: var(--font-mono); min-width: 0; }
 .role-pill span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .role-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
-.logout-link { font-size: 11px; color: var(--on-black-faint); font-weight: 600; margin-left: auto; flex-shrink: 0; padding-left: 8px; }
-.logout-link:hover { color: var(--red); }
 .sidebar.collapsed .role-pill { display: none; }
 .sidebar.collapsed .sidebar-footer > div { justify-content: center; }
-.sidebar.collapsed .logout-link { margin-left: 0; padding-left: 0; }
+
+.theme-switch { display: flex; gap: 3px; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 3px; margin-top: 10px; }
+.theme-switch-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; border-radius: 6px; color: var(--on-black-faint); font-size: 11px; font-weight: 600; }
+.theme-switch-btn svg { width: 13px; height: 13px; }
+.theme-switch-btn:hover { color: var(--on-black); }
+.theme-switch-btn.active { background: var(--red); color: var(--white); }
+.sidebar.collapsed .theme-switch { flex-direction: column; background: none; padding: 0; gap: 4px; }
+.sidebar.collapsed .theme-switch-btn { padding: 6px 0; }
+.sidebar.collapsed .theme-switch-btn .label { display: none; }
 
 /* ---------- Main ---------- */
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }

@@ -36,6 +36,15 @@ export const IconSearch = () => (
 export const IconArrowLeft = () => (
   <svg {...base}><path d="M19 12H5M11 6l-6 6 6 6" /></svg>
 );
+export const IconSun = () => (
+  <svg {...base}><circle cx="12" cy="12" r="4.5" /><path d="M12 2.5v2.5M12 19v2.5M4.2 4.2l1.8 1.8M18 18l1.8 1.8M2.5 12H5M19 12h2.5M4.2 19.8 6 18M18 6l1.8-1.8" /></svg>
+);
+export const IconMoon = () => (
+  <svg {...base}><path d="M20 14.5A8.5 8.5 0 1 1 9.5 4 6.8 6.8 0 0 0 20 14.5Z" /></svg>
+);
+export const IconAuto = () => (
+  <svg {...base}><circle cx="12" cy="12" r="9" /><path d="M12 3v18a9 9 0 0 0 0-18Z" fill="currentColor" stroke="none" /></svg>
+);
 export const IconBell = () => (
   <svg {...base}><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6" /><path d="M10 21a2 2 0 0 0 4 0" /></svg>
 );

@@ -32,3 +32,42 @@
   --font-body: 'Inter', sans-serif;
   --font-mono: 'IBM Plex Mono', monospace;
 }
+
+/* Dark palette — applies when the OS prefers dark and the user hasn't explicitly
+   chosen light ("auto" + system dark), or when the user explicitly chose dark.
+   --black/--white/--red/--on-black* are brand-accent tokens used on surfaces that
+   are already dark in either theme (sidebar, hero, buttons) — they don't change.
+   --red-dark lightens here since every usage is text sitting on a dark surface. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ink: #f1f1f2;
+    --ink-soft: #a9a9ae;
+    --ink-faint: #77777c;
+
+    --surface: #1c1c1f;
+    --surface-alt: #131315;
+    --surface-sunken: #16161a;
+    --border: #2b2b2f;
+    --border-strong: #3c3c41;
+
+    --red-dark: #ff5a63;
+    --red-soft: #3a161a;
+    --red-soft-strong: #4a1c21;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ink: #f1f1f2;
+  --ink-soft: #a9a9ae;
+  --ink-faint: #77777c;
+
+  --surface: #1c1c1f;
+  --surface-alt: #131315;
+  --surface-sunken: #16161a;
+  --border: #2b2b2f;
+  --border-strong: #3c3c41;
+
+  --red-dark: #ff5a63;
+  --red-soft: #3a161a;
+  --red-soft-strong: #4a1c21;
+}
