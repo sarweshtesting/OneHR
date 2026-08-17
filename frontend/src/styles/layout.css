@@ -159,6 +159,9 @@
 .page-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 10px; }
 .page-head h1 { font-family: var(--font-display); font-size: 23px; font-weight: 700; letter-spacing: -0.01em; }
 .page-head .date { color: var(--ink-faint); font-size: 13px; font-family: var(--font-mono); }
+.page-back { width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--ink); background: var(--surface-alt); border: 1px solid var(--border); flex-shrink: 0; }
+.page-back:hover { background: var(--red); color: #fff; border-color: var(--red); }
+.page-back svg { width: 16px; height: 16px; }
 .page-tabs { display: flex; gap: 4px; margin-bottom: 20px; border-bottom: 1px solid var(--border); }
 .page-tab { padding: 9px 4px; margin-right: 20px; font-size: 13.5px; font-weight: 600; color: var(--ink-faint); border-bottom: 2px solid transparent; position: relative; top: 1px; }
 .page-tab.active { color: var(--ink); border-bottom-color: var(--red); }

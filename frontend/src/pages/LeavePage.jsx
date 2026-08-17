@@ -3,6 +3,7 @@ import { useApi } from '../hooks/useApi';
 import { apiFetch, apiUpload } from '../api/client';
 import { fmtDateRange } from '../utils/format';
 import LeaveAttachments from '../components/LeaveAttachments';
+import BackButton from '../components/BackButton';
 
 const STATUS_CLASS = { APPROVED: 'approved', PENDING: 'pending', REJECTED: 'rejected', CANCELLED: 'rejected' };
 
@@ -66,7 +67,10 @@ export default function LeavePage() {
   return (
     <section>
       <div className="page-head">
-        <h1>Leave</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <BackButton />
+          <h1>Leave</h1>
+        </div>
         <div className="date">Balance as of {new Date().toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</div>
       </div>
 

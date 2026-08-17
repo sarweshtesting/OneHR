@@ -1,12 +1,11 @@
 import { useRef, useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { useApi } from '../hooks/useApi';
 import { roleLabel } from '../utils/roles';
 import {
   IconGrid, IconClock, IconCalendar, IconOrgChart, IconPeople,
   IconPayroll, IconClientTracking, IconAdmin, IconAuditLog,
-  IconBell, IconCalendarDays, IconStar, IconChevronDown, IconPanelToggle,
+  IconCalendarDays, IconStar, IconChevronDown, IconPanelToggle,
 } from './icons';
 
 function NavItem({ to, icon, children, badge }) {
@@ -67,8 +66,6 @@ function NavGroup({ label, icon, children }) {
 
 export default function Sidebar() {
   const { user, logout, canAccessFinance } = useAuth();
-  const { data: notifications } = useApi('/api/notifications');
-  const unreadCount = (notifications || []).filter((n) => !n.read).length;
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('nexora_sidebar_collapsed') === '1');
 
   function toggleCollapsed() {
@@ -91,7 +88,6 @@ export default function Sidebar() {
 
       <div className="nav-scroll">
         <NavItem to="/overview" icon={<IconGrid />}>Overview</NavItem>
-        <NavItem to="/notifications" icon={<IconBell />} badge={unreadCount}>Notifications</NavItem>
 
         <NavGroup label="Organization" icon={<IconPeople />}>
           <NavItem to="/people" icon={<IconPeople />}>People</NavItem>

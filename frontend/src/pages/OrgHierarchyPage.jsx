@@ -1,7 +1,5 @@
-import { useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { roleLabel } from '../utils/roles';
-import { IconChevronDown } from '../components/icons';
 
 function buildTree(nodes) {
   const byId = new Map(nodes.map((n) => [n.id, { ...n, children: [] }]));
@@ -16,53 +14,27 @@ function buildTree(nodes) {
   return roots;
 }
 
-function OrgNode({ node, collapsed, toggle }) {
-  const isCollapsed = collapsed.has(node.id);
+function OrgChartNode({ node }) {
   const hasChildren = node.children.length > 0;
-
   return (
-    <div className="org-node">
-      <div className="org-node-row">
-        {hasChildren ? (
-          <button
-            type="button"
-            className={'org-node-toggle' + (isCollapsed ? ' collapsed' : '')}
-            onClick={() => toggle(node.id)}
-            aria-label={isCollapsed ? 'Expand' : 'Collapse'}
-          >
-            <IconChevronDown />
-          </button>
-        ) : (
-          <span className="org-node-toggle-spacer" />
-        )}
-        <div className="avatar-circle" title={node.jobTitle || roleLabel(node.role)}>{node.avatarInitials || '?'}</div>
-        <div className="org-node-meta" title={node.jobTitle || roleLabel(node.role)}>
-          <div className="name">{node.fullName}</div>
-          <div className="title">{node.jobTitle || roleLabel(node.role)}</div>
-        </div>
-        <span className="pill neutral">{roleLabel(node.role)}</span>
+    <li>
+      <div className="oc-card">
+        <div className="oc-avatar">{node.avatarInitials || '?'}</div>
+        <div className="oc-name">{node.fullName}</div>
+        <div className="oc-title">{node.jobTitle || roleLabel(node.role)}</div>
       </div>
-      {hasChildren && !isCollapsed && (
-        <div className="org-node-children">
-          {node.children.map((child) => <OrgNode key={child.id} node={child} collapsed={collapsed} toggle={toggle} />)}
-        </div>
+      {hasChildren && (
+        <ul>
+          {node.children.map((child) => <OrgChartNode key={child.id} node={child} />)}
+        </ul>
       )}
-    </div>
+    </li>
   );
 }
 
 export default function OrgHierarchyPage() {
   const { data } = useApi('/api/org/hierarchy');
-  const [collapsed, setCollapsed] = useState(() => new Set());
   const tree = data ? buildTree(data) : [];
-
-  function toggle(id) {
-    setCollapsed((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
-      return next;
-    });
-  }
 
   return (
     <section>
@@ -70,11 +42,13 @@ export default function OrgHierarchyPage() {
         <h1>Organisation</h1>
       </div>
 
-      <div className="panel">
+      <div className="panel oc-panel">
         {!data?.length && <div className="panel-empty">No team members to show</div>}
         {tree.length > 0 && (
-          <div className="org-tree">
-            {tree.map((node) => <OrgNode key={node.id} node={node} collapsed={collapsed} toggle={toggle} />)}
+          <div className="oc-scroll">
+            <ul className="oc-tree">
+              {tree.map((node) => <OrgChartNode key={node.id} node={node} />)}
+            </ul>
           </div>
         )}
       </div>
