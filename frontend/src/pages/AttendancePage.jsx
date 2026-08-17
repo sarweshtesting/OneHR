@@ -30,12 +30,14 @@ export default function AttendancePage() {
   const { data: heatmap } = useApi(`/api/attendance/heatmap?month=${month}`);
   const { data: logs } = useApi(`/api/attendance/logs?${qs('&size=20')}`);
 
-  async function exportCsv() {
+  const EXPORT_FORMATS = { csv: 'attendance-logs.csv', xlsx: 'attendance-logs.xlsx', pdf: 'attendance-logs.pdf' };
+
+  async function exportAs(format) {
     try {
-      const blob = await apiFetchBlob(`/api/attendance/logs/export?${qs()}`);
+      const blob = await apiFetchBlob(`/api/attendance/logs/export?${qs()}&format=${format}`);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
-      a.href = url; a.download = 'attendance-logs.csv';
+      a.href = url; a.download = EXPORT_FORMATS[format];
       document.body.appendChild(a); a.click(); a.remove();
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -94,7 +96,12 @@ export default function AttendancePage() {
       <div className="panel">
         <div className="panel-head">
           <h2>Recent daily logs</h2>
-          <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); exportCsv(); }}>Export CSV →</a>
+          <div className="export-links">
+            <span>Export:</span>
+            <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); exportAs('csv'); }}>CSV</a>
+            <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); exportAs('xlsx'); }}>Excel</a>
+            <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); exportAs('pdf'); }}>PDF</a>
+          </div>
         </div>
         <table className="data-table">
           <thead>

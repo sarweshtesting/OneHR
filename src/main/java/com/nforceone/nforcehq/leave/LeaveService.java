@@ -194,7 +194,7 @@ public class LeaveService {
         return leaveRequestRepository.findByUserIdAndOrganizationIdOrderByCreatedAtDesc(principal.userId(), organizationId)
                 .stream()
                 .map(r -> new RequestHistoryItem(
-                        "LEAVE",
+                        r.getId(), "LEAVE",
                         typesById.containsKey(r.getLeaveTypeId()) ? typesById.get(r.getLeaveTypeId()).getName() : "Leave",
                         r.getStartDate(), r.getEndDate(), r.getDaysRequested(), r.getStatus().name(), r.getCreatedAt()))
                 .toList();
@@ -218,6 +218,8 @@ public class LeaveService {
         Map<UUID, User> usersById = new HashMap<>();
         userRepository.findAllById(Set.copyOf(upcoming.stream().map(LeaveRequest::getUserId).toList()))
                 .forEach(u -> usersById.put(u.getId(), u));
+        Map<UUID, LeaveType> typesById = leaveTypeRepository.findByOrganizationIdAndActiveTrue(organizationId).stream()
+                .collect(java.util.stream.Collectors.toMap(LeaveType::getId, t -> t));
 
         return upcoming.stream()
                 .filter(r -> {
@@ -225,14 +227,17 @@ public class LeaveService {
                     User u = usersById.get(r.getUserId());
                     return u != null && callerDepartmentId.equals(u.getDepartmentId());
                 })
-                .limit(10)
+                .limit(60)
                 .map(r -> {
                     User u = usersById.get(r.getUserId());
+                    LeaveType type = typesById.get(r.getLeaveTypeId());
                     return new TeamCalendarEntry(
                             r.getUserId(),
                             u != null ? u.getFullName() : "Unknown",
                             u != null ? u.getAvatarInitials() : "?",
-                            r.getStartDate(), r.getEndDate());
+                            r.getStartDate(), r.getEndDate(),
+                            type != null ? type.getCode().name() : null,
+                            type != null ? type.getName() : "Leave");
                 })
                 .toList();
     }

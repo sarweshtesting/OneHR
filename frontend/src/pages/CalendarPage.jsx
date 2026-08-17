@@ -87,24 +87,42 @@ export default function CalendarPage() {
             const iso = toIso(date);
             const holiday = holidaysByDate.get(iso);
             const dayLeave = leaveByDate.get(iso) || [];
+            const compOffs = dayLeave.filter((e) => e.leaveTypeCode === 'COMP_OFF');
+            const otherLeave = dayLeave.filter((e) => e.leaveTypeCode !== 'COMP_OFF');
+            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+
             return (
-              <div key={i} className={'calendar-cell' + (outside ? ' outside' : '') + (iso === todayIso ? ' today' : '')}>
+              <div
+                key={i}
+                className={'calendar-cell' + (outside ? ' outside' : '') + (iso === todayIso ? ' today' : '') + (isWeekend ? ' weekend' : '')}
+                title={isWeekend && !holiday ? 'Week-off' : undefined}
+              >
                 <div className="day-num">{date.getDate()}</div>
+                {isWeekend && !holiday && <div className="calendar-event weekoff">Week-off</div>}
                 {holiday && (
                   <div className="calendar-event holiday" title={holiday.name}>{holiday.name}</div>
                 )}
-                {dayLeave.slice(0, 2).map((entry) => (
+                {otherLeave.slice(0, 2).map((entry) => (
                   <div
                     className="calendar-event leave"
                     key={entry.userId + entry.startDate}
-                    title={`${entry.userName} on leave ${entry.startDate} – ${entry.endDate}`}
+                    title={`${entry.userName} — ${entry.leaveTypeName || 'Leave'} (${entry.startDate} – ${entry.endDate})`}
                   >
                     {entry.userName.split(' ')[0]}
                   </div>
                 ))}
-                {dayLeave.length > 2 && (
-                  <div className="calendar-event leave" title={dayLeave.slice(2).map((e) => e.userName).join(', ')}>
-                    +{dayLeave.length - 2} more
+                {compOffs.slice(0, 2).map((entry) => (
+                  <div
+                    className="calendar-event compoff"
+                    key={'comp-' + entry.userId + entry.startDate}
+                    title={`${entry.userName} — Comp-off (${entry.startDate} – ${entry.endDate})`}
+                  >
+                    {entry.userName.split(' ')[0]} · Comp-off
+                  </div>
+                ))}
+                {dayLeave.length > 4 && (
+                  <div className="calendar-event leave" title={dayLeave.slice(4).map((e) => e.userName).join(', ')}>
+                    +{dayLeave.length - 4} more
                   </div>
                 )}
               </div>
@@ -114,7 +132,9 @@ export default function CalendarPage() {
 
         <div className="calendar-legend">
           <div><span style={{ background: 'var(--red-soft)' }} />Holiday</div>
-          <div><span style={{ background: 'var(--surface-sunken)' }} />Approved leave</div>
+          <div><span style={{ background: 'var(--surface-sunken)' }} />Employee leave</div>
+          <div><span style={{ background: 'var(--black)' }} />Comp-off</div>
+          <div><span style={{ background: 'var(--surface-alt)', border: '1px dashed var(--border-strong)' }} />Week-off</div>
         </div>
       </div>
     </section>

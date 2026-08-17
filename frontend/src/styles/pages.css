@@ -118,6 +118,19 @@
 .leave-apply-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 18px; }
 .leave-apply-panel h2 { font-family: var(--font-display); font-size: 15px; margin-bottom: 16px; }
 
+.file-picker-label { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; color: var(--ink-soft); cursor: pointer; }
+.file-picker-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.file-picker-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--surface-alt); border: 1px solid var(--border); border-radius: 20px; padding: 4px 10px; font-size: 11.5px; }
+.file-picker-chip button { color: var(--red); font-weight: 700; }
+
+.attachments-toggle { font-size: 11.5px; color: var(--red); font-weight: 600; }
+.attachments-panel { padding: 10px 0 4px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.attachments-empty { font-size: 11.5px; color: var(--ink-faint); }
+.attachment-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--surface-alt); border: 1px solid var(--border); border-radius: 20px; padding: 4px 10px; font-size: 11.5px; }
+.attachment-chip:hover { border-color: var(--border-strong); }
+.attachment-chip .size { color: var(--ink-faint); }
+.attachment-add { font-size: 11.5px; color: var(--red); font-weight: 600; cursor: pointer; }
+
 /* ---------- Login ---------- */
 .login-screen { min-height: 100vh; width: 100%; display: grid; grid-template-columns: 1.15fr 1fr; background: var(--surface-alt); }
 .login-form-side { display: flex; align-items: center; justify-content: center; padding: 40px 24px; }
@@ -172,6 +185,49 @@
 .profile-section-divider { border-top: 1px solid var(--border); margin: 18px 0; padding-top: 18px; }
 .profile-section-divider h3 { font-family: var(--font-display); font-size: 13.5px; font-weight: 600; margin-bottom: 14px; }
 
+/* ---------- Finance chat ---------- */
+.finance-chat-panel { display: flex; flex-direction: column; height: 560px; }
+.finance-chat-messages { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.chat-bubble-row { display: flex; }
+.chat-bubble-row.own { justify-content: flex-end; }
+.chat-bubble { max-width: 70%; background: var(--surface-alt); border: 1px solid var(--border); border-radius: 12px; padding: 9px 13px; }
+.chat-bubble-row.own .chat-bubble { background: var(--black); color: var(--white); border-color: var(--black); }
+.chat-bubble-sender { font-size: 11px; font-weight: 700; color: var(--red); margin-bottom: 2px; }
+.chat-bubble-text { font-size: 13px; line-height: 1.45; white-space: pre-wrap; }
+.chat-bubble-time { font-size: 10px; color: var(--ink-faint); margin-top: 4px; font-family: var(--font-mono); }
+.chat-bubble-row.own .chat-bubble-time { color: var(--on-black-faint); }
+.finance-chat-input { display: flex; gap: 10px; padding: 14px 18px; border-top: 1px solid var(--border); }
+.finance-chat-input input { flex: 1; padding: 9px 12px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 13px; background: var(--surface-alt); }
+.finance-chat-input input:focus { outline: none; border-color: var(--red); }
+
+/* ---------- People ---------- */
+.people-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.people-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; display: flex; align-items: flex-start; gap: 12px; }
+.people-card-meta { flex: 1; min-width: 0; }
+.people-card-meta .name { font-weight: 600; font-size: 13.5px; }
+.people-card-meta .title { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+.people-card-meta .dept { font-size: 11.5px; color: var(--ink-faint); margin-top: 4px; }
+.people-card-meta .contact { font-size: 11px; color: var(--ink-faint); margin-top: 6px; font-family: var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---------- Appraisal ---------- */
+.appraisal-list { padding: 6px 0; }
+.appraisal-card { border-bottom: 1px solid var(--border); }
+.appraisal-card:last-child { border-bottom: none; }
+.appraisal-card-head { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 14px 18px; text-align: left; gap: 12px; }
+.appraisal-card-head:hover { background: var(--surface-alt); }
+.appraisal-card-head-main { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.appraisal-chevron { display: flex; color: var(--ink-faint); flex-shrink: 0; }
+.appraisal-chevron svg { width: 15px; height: 15px; transition: transform .15s ease; }
+.appraisal-chevron.open svg { transform: rotate(180deg); }
+.appraisal-cycle { font-weight: 600; font-size: 13.5px; }
+.appraisal-employee { font-size: 11.5px; color: var(--ink-faint); margin-top: 1px; }
+.appraisal-card-head-meta { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.appraisal-card-body { padding: 4px 18px 18px 45px; }
+.appraisal-section { margin-bottom: 12px; }
+.appraisal-section h4 { font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: var(--ink-faint); margin-bottom: 4px; }
+.appraisal-section p { font-size: 13px; color: var(--ink); line-height: 1.5; white-space: pre-wrap; }
+.appraisal-section-footer { display: flex; align-items: center; justify-content: space-between; font-size: 11.5px; color: var(--ink-faint); margin-top: 14px; }
+
 /* ---------- Notifications page ---------- */
 .notif-page-item { display: flex; gap: 14px; padding: 16px 18px; border-bottom: 1px solid var(--border); align-items: flex-start; }
 .notif-page-item:last-child { border-bottom: none; }
@@ -188,6 +244,11 @@
 .org-tree { padding: 8px 18px 18px 18px; }
 .org-node { }
 .org-node-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.org-node-toggle { width: 18px; height: 18px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: var(--ink-faint); }
+.org-node-toggle svg { width: 13px; height: 13px; transition: transform .15s ease; }
+.org-node-toggle.collapsed svg { transform: rotate(-90deg); }
+.org-node-toggle:hover { color: var(--ink); }
+.org-node-toggle-spacer { width: 18px; flex-shrink: 0; }
 .org-node-children { padding-left: 32px; border-left: 1px dashed var(--border-strong); margin-left: 15px; }
 .org-node-meta { flex: 1; min-width: 0; }
 .org-node-meta .name { font-weight: 600; font-size: 13px; }
@@ -206,10 +267,13 @@
 }
 .calendar-cell.outside { background: var(--surface-alt); color: var(--ink-faint); }
 .calendar-cell.today { border-color: var(--red); }
+.calendar-cell.weekend { background: var(--surface-alt); border-style: dashed; border-color: var(--border-strong); }
 .calendar-cell .day-num { font-weight: 600; font-family: var(--font-mono); font-size: 12px; }
 .calendar-event { margin-top: 5px; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 10px; line-height: 1.5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; cursor: help; }
 .calendar-event.holiday { background: var(--red-soft); color: var(--red-dark); }
 .calendar-event.leave { background: var(--surface-sunken); color: var(--ink); margin-top: 3px; }
+.calendar-event.compoff { background: var(--black); color: var(--white); margin-top: 3px; }
+.calendar-event.weekoff { background: transparent; color: var(--ink-faint); font-weight: 700; text-transform: uppercase; letter-spacing: .03em; font-size: 9px; padding: 2px 0; }
 .calendar-legend { display: flex; gap: 16px; margin-top: 14px; font-size: 11.5px; color: var(--ink-soft); }
 .calendar-legend div { display: flex; align-items: center; gap: 6px; }
 .calendar-legend span { width: 9px; height: 9px; border-radius: 2px; }

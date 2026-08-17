@@ -13,6 +13,9 @@ import NotificationsPage from './pages/NotificationsPage';
 import OrgHierarchyPage from './pages/OrgHierarchyPage';
 import CalendarPage from './pages/CalendarPage';
 import HelpPage from './pages/HelpPage';
+import AppraisalPage from './pages/AppraisalPage';
+import PeoplePage from './pages/PeoplePage';
+import FinanceChatPage from './pages/FinanceChatPage';
 
 export default function App() {
   return (
@@ -29,6 +32,9 @@ export default function App() {
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/org-hierarchy" element={<OrgHierarchyPage />} />
+          <Route path="/appraisal" element={<AppraisalPage />} />
+          <Route path="/people" element={<PeoplePage />} />
+          <Route path="/finance" element={<FinanceChatPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/help" element={<HelpPage />} />
           <Route path="/" element={<Navigate to="/overview" replace />} />

@@ -60,6 +60,10 @@ resend:
 app:
   frontend-base-url: ${FRONTEND_BASE_URL:http://localhost:5174}
 
+spring.servlet.multipart:
+  max-file-size: 5MB
+  max-request-size: 5MB
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

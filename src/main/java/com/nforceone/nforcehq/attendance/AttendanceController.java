@@ -1,8 +1,7 @@
 package com.nforceone.nforcehq.attendance;
 
+import com.nforceone.nforcehq.common.ApiException;
 import com.nforceone.nforcehq.security.JwtPrincipal;
-import java.nio.charset.StandardCharsets;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +27,7 @@ public class AttendanceController {
 
     private final AttendanceService attendanceService;
     private final AttendanceQueryService attendanceQueryService;
+    private final AttendanceExportService attendanceExportService;
     private final RegularizationService regularizationService;
     private final MismatchService mismatchService;
 
@@ -90,29 +90,35 @@ public class AttendanceController {
     public ResponseEntity<byte[]> exportLogs(
             @AuthenticationPrincipal JwtPrincipal principal,
             @RequestParam(required = false) String view,
-            @RequestParam(required = false) String month) {
+            @RequestParam(required = false) String month,
+            @RequestParam(defaultValue = "csv") String format) {
         List<AttendanceLogRow> rows = attendanceQueryService.logsForExport(principal, view, month, null);
 
-        StringBuilder csv = new StringBuilder("Date,Employee,Clock In,Clock Out,Break (min),Hours,Mode,Status\n");
-        DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm").withZone(java.time.ZoneOffset.UTC);
-        for (AttendanceLogRow row : rows) {
-            double hours = row.totalWorkedMinutes() != null ? row.totalWorkedMinutes() / 60.0 : 0;
-            csv.append(row.workDate()).append(',')
-                    .append(row.employeeName() != null ? row.employeeName() : "").append(',')
-                    .append(row.clockInAt() != null ? timeFmt.format(row.clockInAt()) : "").append(',')
-                    .append(row.clockOutAt() != null ? timeFmt.format(row.clockOutAt()) : "").append(',')
-                    .append(row.totalBreakMinutes()).append(',')
-                    .append(String.format("%.2f", hours)).append(',')
-                    .append(row.mode() != null ? row.mode() : "").append(',')
-                    .append(row.status()).append('\n');
+        byte[] body;
+        String filename;
+        MediaType contentType;
+        switch (format.toLowerCase()) {
+            case "xlsx" -> {
+                body = attendanceExportService.toXlsx(rows);
+                filename = "attendance-logs.xlsx";
+                contentType = MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+            }
+            case "pdf" -> {
+                body = attendanceExportService.toPdf(rows);
+                filename = "attendance-logs.pdf";
+                contentType = MediaType.APPLICATION_PDF;
+            }
+            case "csv" -> {
+                body = attendanceExportService.toCsv(rows);
+                filename = "attendance-logs.csv";
+                contentType = MediaType.parseMediaType("text/csv");
+            }
+            default -> throw new ApiException(HttpStatus.BAD_REQUEST, "Unsupported export format: " + format);
         }
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentDisposition(ContentDisposition.attachment().filename("attendance-logs.csv").build());
-        return ResponseEntity.ok()
-                .headers(headers)
-                .contentType(MediaType.parseMediaType("text/csv"))
-                .body(csv.toString().getBytes(StandardCharsets.UTF_8));
+        headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());
+        return ResponseEntity.ok().headers(headers).contentType(contentType).body(body);
     }
 
     @PostMapping("/regularizations")

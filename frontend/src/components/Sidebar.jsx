@@ -3,8 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { useApi } from '../hooks/useApi';
 import {
   IconGrid, IconClock, IconCalendar, IconOrgChart, IconPeople,
-  IconPayroll, IconClientTracking, IconChat, IconAdmin, IconAuditLog,
-  IconBell, IconCalendarDays,
+  IconPayroll, IconClientTracking, IconAdmin, IconAuditLog,
+  IconBell, IconCalendarDays, IconStar,
 } from './icons';
 
 function NavItem({ to, icon, children, badge }) {
@@ -42,15 +42,15 @@ export default function Sidebar() {
       <NavItem to="/overview" icon={<IconGrid />}>Overview</NavItem>
       <NavItem to="/attendance" icon={<IconClock />}>Attendance</NavItem>
       <NavItem to="/leave" icon={<IconCalendar />}>Leave</NavItem>
+      <NavItem to="/appraisal" icon={<IconStar />}>Appraisal</NavItem>
       <NavItem to="/calendar" icon={<IconCalendarDays />}>Calendar</NavItem>
       <NavItem to="/notifications" icon={<IconBell />} badge={unreadCount}>Notifications</NavItem>
-      <NavItem to="/org-hierarchy" icon={<IconOrgChart />}>Org Hierarchy</NavItem>
-      <InertNavItem icon={<IconPeople />}>People</InertNavItem>
+      <NavItem to="/org-hierarchy" icon={<IconOrgChart />}>Organisation</NavItem>
+      <NavItem to="/people" icon={<IconPeople />}>People</NavItem>
 
       <div className="nav-group-label">Finance &amp; Ops</div>
-      <InertNavItem icon={<IconPayroll />}>Payroll</InertNavItem>
+      <NavItem to="/finance" icon={<IconPayroll />}>Finance</NavItem>
       <InertNavItem icon={<IconClientTracking />}>Client Tracking</InertNavItem>
-      <InertNavItem icon={<IconChat />}>Chat</InertNavItem>
 
       <div className="nav-group-label">Governance</div>
       <InertNavItem icon={<IconAdmin />}>Admin</InertNavItem>

@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { useApi } from '../hooks/useApi';
-import { apiFetch } from '../api/client';
+import { apiFetch, apiUpload } from '../api/client';
 import { fmtDateRange } from '../utils/format';
+import LeaveAttachments from '../components/LeaveAttachments';
 
 const STATUS_CLASS = { APPROVED: 'approved', PENDING: 'pending', REJECTED: 'rejected', CANCELLED: 'rejected' };
 
@@ -12,11 +13,24 @@ export default function LeavePage() {
   const { data: calendar } = useApi('/api/leave/team-calendar');
 
   const [form, setForm] = useState({ leaveTypeId: '', startDate: '', endDate: '', reason: '' });
+  const [pendingFiles, setPendingFiles] = useState([]);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [expandedId, setExpandedId] = useState(null);
+  const fileInputRef = useRef(null);
 
   function setField(key, value) {
     setForm((f) => ({ ...f, [key]: value }));
+  }
+
+  function addFiles(e) {
+    const files = Array.from(e.target.files || []);
+    setPendingFiles((prev) => [...prev, ...files]);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  function removeFile(index) {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(e) {
@@ -24,7 +38,7 @@ export default function LeavePage() {
     setError('');
     setSubmitting(true);
     try {
-      await apiFetch('/api/leave-requests', {
+      const created = await apiFetch('/api/leave-requests', {
         method: 'POST',
         body: JSON.stringify({
           leaveTypeId: form.leaveTypeId || leaveTypes?.[0]?.id,
@@ -33,7 +47,13 @@ export default function LeavePage() {
           reason: form.reason,
         }),
       });
+      for (const file of pendingFiles) {
+        const formData = new FormData();
+        formData.append('file', file);
+        await apiUpload(`/api/leave-requests/${created.id}/attachments`, formData);
+      }
       setForm({ leaveTypeId: '', startDate: '', endDate: '', reason: '' });
+      setPendingFiles([]);
       await reloadHistory();
       await reloadBalances();
     } catch (err) {
@@ -90,6 +110,25 @@ export default function LeavePage() {
               <textarea placeholder="Brief note for your approver…" value={form.reason} onChange={(e) => setField('reason', e.target.value)} />
             </div>
           </div>
+          <div className="form-row single">
+            <div className="form-field">
+              <label>Attachments (optional)</label>
+              <label className="file-picker-label">
+                📎 Attach a file
+                <input ref={fileInputRef} type="file" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx" onChange={addFiles} hidden />
+              </label>
+              {pendingFiles.length > 0 && (
+                <div className="file-picker-list">
+                  {pendingFiles.map((f, i) => (
+                    <span className="file-picker-chip" key={f.name + i}>
+                      {f.name}
+                      <button type="button" onClick={() => removeFile(i)}>×</button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
           <button type="submit" className="btn-submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit request'}</button>
         </form>
       </div>
@@ -98,16 +137,30 @@ export default function LeavePage() {
         <div className="panel">
           <div className="panel-head"><h2>My leave history</h2></div>
           <table className="data-table">
-            <thead><tr><th>Type</th><th>Dates</th><th>Days</th><th>Status</th></tr></thead>
+            <thead><tr><th>Type</th><th>Dates</th><th>Days</th><th>Status</th><th></th></tr></thead>
             <tbody>
-              {!history?.length && <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--ink-faint)' }}>No requests yet</td></tr>}
+              {!history?.length && <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--ink-faint)' }}>No requests yet</td></tr>}
               {history?.map((r, i) => (
-                <tr key={i}>
-                  <td>{r.typeLabel}</td>
-                  <td className="mono">{fmtDateRange(r.startDate, r.endDate)}</td>
-                  <td className="mono">{r.days}</td>
-                  <td><span className={'history-status ' + (STATUS_CLASS[r.status] || '')}>{r.status.charAt(0) + r.status.slice(1).toLowerCase()}</span></td>
-                </tr>
+                <Fragment key={r.id || i}>
+                  <tr>
+                    <td>{r.typeLabel}</td>
+                    <td className="mono">{fmtDateRange(r.startDate, r.endDate)}</td>
+                    <td className="mono">{r.days}</td>
+                    <td><span className={'history-status ' + (STATUS_CLASS[r.status] || '')}>{r.status.charAt(0) + r.status.slice(1).toLowerCase()}</span></td>
+                    <td>
+                      {r.id && (
+                        <button type="button" className="attachments-toggle" onClick={() => setExpandedId(expandedId === r.id ? null : r.id)}>
+                          {expandedId === r.id ? 'Hide' : 'Attachments'}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                  {expandedId === r.id && (
+                    <tr>
+                      <td colSpan={5}><LeaveAttachments leaveRequestId={r.id} /></td>
+                    </tr>
+                  )}
+                </Fragment>
               ))}
             </tbody>
           </table>

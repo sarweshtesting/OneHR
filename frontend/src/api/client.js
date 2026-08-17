@@ -79,6 +79,27 @@ export async function resetPassword(token, newPassword) {
   return publicPost('/api/auth/reset-password', { token, newPassword });
 }
 
+/** Multipart upload — omits the JSON Content-Type so the browser can set its own multipart boundary. */
+export async function apiUpload(path, formData) {
+  const headers = { Authorization: `Bearer ${getToken()}` };
+  const selectedOrg = getSelectedOrg();
+  if (selectedOrg) headers['X-Organization-Id'] = selectedOrg;
+
+  const res = await fetch(API_BASE + path, { method: 'POST', headers, body: formData });
+
+  if (res.status === 401) {
+    clearToken();
+    clearSelectedOrg();
+    if (unauthorizedHandler) unauthorizedHandler();
+    throw new Error('Session expired');
+  }
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.message || body.error || `Request failed: ${res.status}`);
+  }
+  return res.json();
+}
+
 export async function apiFetchBlob(path) {
   const res = await fetch(API_BASE + path, { headers: { Authorization: `Bearer ${getToken()}` } });
   if (!res.ok) throw new Error('Request failed: ' + res.status);

@@ -8,5 +8,7 @@ public record TeamCalendarEntry(
         String userName,
         String avatarInitials,
         LocalDate startDate,
-        LocalDate endDate) {
+        LocalDate endDate,
+        String leaveTypeCode,
+        String leaveTypeName) {
 }
