@@ -87,24 +87,37 @@ export default function OverviewPage() {
         <div className="date">{new Date().toLocaleDateString(undefined, { weekday: 'long', day: 'numeric', month: 'short', year: 'numeric' })}</div>
       </div>
 
-      <section className="hero">
-        <div className="hero-top">
-          <div>
-            <div className="hero-eyebrow">Your shift</div>
-            <div className="hero-name">{user?.name}</div>
-            <div className="hero-sub">{heroSub()}</div>
+      <div className="hero-row">
+        <section className="hero">
+          <div className="hero-top">
+            <div>
+              <div className="hero-eyebrow">Your shift</div>
+              <div className="hero-name">{user?.name}</div>
+              <div className="hero-sub">{heroSub()}</div>
+            </div>
+            <div className="hero-clock">
+              <div className="time" style={{ color: timeColor() }}>{timeString}</div>
+              <div className="elapsed" style={{ color: timeColor() }}>{elapsedText()}</div>
+              <button className={'clock-btn' + (notClockedInOrDone ? ' out' : '')} disabled={shiftComplete} onClick={handleClockToggle}>
+                {notClockedInOrDone ? <IconClockIn /> : <IconClockOut />}
+                <span>{clockLabel}</span>
+              </button>
+            </div>
           </div>
-          <div className="hero-clock">
-            <div className="time" style={{ color: timeColor() }}>{timeString}</div>
-            <div className="elapsed" style={{ color: timeColor() }}>{elapsedText()}</div>
-            <button className={'clock-btn' + (notClockedInOrDone ? ' out' : '')} disabled={shiftComplete} onClick={handleClockToggle}>
-              {notClockedInOrDone ? <IconClockIn /> : <IconClockOut />}
-              <span>{clockLabel}</span>
-            </button>
+          <ShiftRail attendance={attendance} />
+        </section>
+
+        <div className="panel todo-panel-hero">
+          <div className="panel-head"><h2>Your to-do</h2><span className="stat-delta" style={{ margin: 0 }}>5 open</span></div>
+          <div className="todo-scroll">
+            <div className="todo-row"><div className="todo-check" /><div className="todo-text">Upload Q3 <b>skill certification</b> to profile</div><div className="todo-tag">Profile</div></div>
+            <div className="todo-row"><div className="todo-check" /><div className="todo-text">Acknowledge <b>WFH policy</b> update</div><div className="todo-tag">Policy</div></div>
+            <div className="todo-row"><div className="todo-check" /><div className="todo-text">Review <b>1:1 notes</b> before Friday sync</div><div className="todo-tag">Manager</div></div>
+            <div className="todo-row"><div className="todo-check" /><div className="todo-text">Submit <b>timesheet</b> for client engagement</div><div className="todo-tag">Client</div></div>
+            <div className="todo-row"><div className="todo-check" /><div className="todo-text">Confirm <b>emergency contact</b> details</div><div className="todo-tag">HR</div></div>
           </div>
         </div>
-        <ShiftRail attendance={attendance} />
-      </section>
+      </div>
 
       <div className="quick-actions">
         <button className="qa-btn" onClick={() => navigate('/leave')}>
@@ -172,15 +185,6 @@ export default function OverviewPage() {
                 ))}
               </div>
             )}
-          </div>
-
-          <div className="panel">
-            <div className="panel-head"><h2>Your to-do</h2><span className="stat-delta" style={{ margin: 0 }}>5 open</span></div>
-            <div className="todo-row"><div className="todo-check" /><div className="todo-text">Upload Q3 <b>skill certification</b> to profile</div><div className="todo-tag">Profile</div></div>
-            <div className="todo-row"><div className="todo-check" /><div className="todo-text">Acknowledge <b>WFH policy</b> update</div><div className="todo-tag">Policy</div></div>
-            <div className="todo-row"><div className="todo-check" /><div className="todo-text">Review <b>1:1 notes</b> before Friday sync</div><div className="todo-tag">Manager</div></div>
-            <div className="todo-row"><div className="todo-check" /><div className="todo-text">Submit <b>timesheet</b> for client engagement</div><div className="todo-tag">Client</div></div>
-            <div className="todo-row"><div className="todo-check" /><div className="todo-text">Confirm <b>emergency contact</b> details</div><div className="todo-tag">HR</div></div>
           </div>
         </div>
       </section>

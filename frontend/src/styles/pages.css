@@ -1,5 +1,9 @@
 /* ---------- Hero: shift rail ---------- */
-.hero { background: var(--black); border-radius: 14px; padding: 16px 24px 14px 24px; color: var(--on-black); margin-bottom: 22px; position: relative; overflow: hidden; }
+.hero-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 22px; align-items: stretch; }
+@media (max-width: 980px) { .hero-row { grid-template-columns: 1fr; } }
+.todo-panel-hero { display: flex; flex-direction: column; }
+.todo-scroll { flex: 1; overflow-y: auto; }
+.hero { background: var(--black); border-radius: 14px; padding: 16px 24px 14px 24px; color: var(--on-black); margin-bottom: 0; position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
 .hero::before { content: ""; position: absolute; top: -60px; right: -60px; width: 220px; height: 220px; border-radius: 50%; background: radial-gradient(circle, rgba(216,30,39,0.45), transparent 70%); }
 .hero-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; position: relative; z-index: 1; flex-wrap: wrap; }
 .hero-eyebrow { font-size: 10.5px; text-transform: uppercase; letter-spacing: .09em; color: var(--on-black-faint); font-weight: 600; margin-bottom: 4px; }
