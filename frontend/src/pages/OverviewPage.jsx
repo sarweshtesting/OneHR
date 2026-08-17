@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useAttendance } from '../context/AttendanceContext';
@@ -8,8 +9,17 @@ import ShiftRail from '../components/ShiftRail';
 import StatsRow from '../components/overview/StatsRow';
 import TeamTodayPanel from '../components/overview/TeamTodayPanel';
 import AttentionPanel from '../components/overview/AttentionPanel';
-import { IconClockIn, IconClockOut, IconLeaveType, IconRegularization, IconPayroll, IconTeamDirectory } from '../components/icons';
+import { IconClockIn, IconClockOut, IconLeaveType, IconRegularization, IconPayroll, IconTeamDirectory, IconChevronDown } from '../components/icons';
 import { fmtTime, fmtDuration, fmtDateRange } from '../utils/format';
+
+const ANNOUNCEMENTS = [
+  { tag: 'Policy update', title: 'New WFH tagging rule effective Sept 1', sub: 'HR · 2 days ago' },
+  { tag: 'Holiday', title: 'Office closed Aug 15 — Independence Day', sub: 'Admin · 4 days ago' },
+  { tag: 'Payroll', title: 'August payslips release on the 30th', sub: 'Finance · 5 days ago' },
+  { tag: 'IT', title: 'VPN maintenance window this Saturday, 10pm–2am', sub: 'IT · 6 days ago' },
+  { tag: 'Facilities', title: 'Cafeteria menu refreshed for the new quarter', sub: 'Admin · 1 week ago' },
+  { tag: 'Benefits', title: 'Open enrollment for health cover closes Sept 10', sub: 'HR · 1 week ago' },
+];
 
 export default function OverviewPage() {
   const { user, isManager } = useAuth();
@@ -17,6 +27,7 @@ export default function OverviewPage() {
   const { timeString } = useClock();
   const { attendance, clockIn, clockOut } = useAttendance();
   const elapsedMinutes = useElapsedMinutes(attendance && !attendance.clockOutAt ? attendance.clockInAt : null);
+  const [announceOpen, setAnnounceOpen] = useState(true);
 
   const { data: team } = useApi('/api/team/today-status');
   const { data: upcomingLeave } = useApi('/api/leave/team-calendar');
@@ -48,6 +59,15 @@ export default function OverviewPage() {
     return `${fmtDuration(attendance.totalWorkedMinutes || 0)} worked today`;
   }
 
+  // Colors follow the shift-rail legend's own naming (Office = red, WFH = white,
+  // Break = dimmed red since you're paused mid-shift, Remaining/idle = faint).
+  function timeColor() {
+    if (!attendance || !attendance.clockInAt) return 'var(--on-black-faint)';
+    if (attendance.clockOutAt) return 'var(--on-black)';
+    if (attendance.onBreak) return 'rgba(216,30,39,0.6)';
+    return attendance.mode === 'WFH' ? 'var(--on-black)' : 'var(--red)';
+  }
+
   const notClockedInOrDone = !attendance || !attendance.clockInAt || attendance.clockOutAt;
   const shiftComplete = attendance && attendance.clockInAt && attendance.clockOutAt;
   const clockLabel = !attendance || !attendance.clockInAt
@@ -75,8 +95,8 @@ export default function OverviewPage() {
             <div className="hero-sub">{heroSub()}</div>
           </div>
           <div className="hero-clock">
-            <div className="time">{timeString}</div>
-            <div className="elapsed">{elapsedText()}</div>
+            <div className="time" style={{ color: timeColor() }}>{timeString}</div>
+            <div className="elapsed" style={{ color: timeColor() }}>{elapsedText()}</div>
             <button className={'clock-btn' + (notClockedInOrDone ? ' out' : '')} disabled={shiftComplete} onClick={handleClockToggle}>
               {notClockedInOrDone ? <IconClockIn /> : <IconClockOut />}
               <span>{clockLabel}</span>
@@ -107,15 +127,6 @@ export default function OverviewPage() {
         <div>
           <TeamTodayPanel team={team || []} onViewAttendance={() => navigate('/attendance')} />
 
-          <div className="panel" style={{ marginBottom: 16 }}>
-            <div className="panel-head"><h2>Announcements</h2><a className="see-all" href="#" onClick={(e) => e.preventDefault()}>All →</a></div>
-            <div className="announce">
-              <div className="announce-card"><div className="tag">Policy update</div><div className="title">New WFH tagging rule effective Sept 1</div><div className="sub">HR · 2 days ago</div></div>
-              <div className="announce-card"><div className="tag">Holiday</div><div className="title">Office closed Aug 15 — Independence Day</div><div className="sub">Admin · 4 days ago</div></div>
-              <div className="announce-card"><div className="tag">Payroll</div><div className="title">August payslips release on the 30th</div><div className="sub">Finance · 5 days ago</div></div>
-            </div>
-          </div>
-
           <div className="panel">
             <div className="panel-head"><h2>Upcoming leave</h2><a className="see-all" href="#" onClick={(e) => { e.preventDefault(); navigate('/leave'); }}>Calendar →</a></div>
             <div className="leave-strip">
@@ -133,6 +144,35 @@ export default function OverviewPage() {
 
         <div>
           {isManager && approvals && <AttentionPanel items={approvals} onChanged={handleApprovalsChanged} />}
+
+          <div className="panel" style={{ marginBottom: 16 }}>
+            <div className="panel-head">
+              <h2>Announcements</h2>
+              <button
+                type="button"
+                className={'panel-toggle' + (announceOpen ? '' : ' collapsed')}
+                onClick={() => setAnnounceOpen((v) => !v)}
+                aria-expanded={announceOpen}
+                aria-label={announceOpen ? 'Collapse announcements' : 'Expand announcements'}
+              >
+                <IconChevronDown />
+              </button>
+            </div>
+            {announceOpen && (
+              <div className="announce-list">
+                {ANNOUNCEMENTS.map((a, i) => (
+                  <div className="announce-row" key={i}>
+                    <span className="dot" />
+                    <div className="announce-row-body">
+                      <div className="tag">{a.tag}</div>
+                      <div className="title">{a.title}</div>
+                      <div className="sub">{a.sub}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="panel">
             <div className="panel-head"><h2>Your to-do</h2><span className="stat-delta" style={{ margin: 0 }}>5 open</span></div>
