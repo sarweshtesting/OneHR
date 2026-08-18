@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useApi } from '../hooks/useApi';
 import BackButton from '../components/BackButton';
+import PayslipDetailModal from '../components/PayslipDetailModal';
 
 const STATUS_PILL = { PAID: ['neutral', 'Paid'], GENERATED: ['dark', 'Generated'] };
 
@@ -18,6 +19,7 @@ export default function PayslipsPage() {
   const { data: mine } = useApi('/api/payslips/me', { skip: view !== 'my' });
   const { data: org } = useApi('/api/payslips', { skip: view !== 'org' });
   const rows = view === 'my' ? mine : org;
+  const [selected, setSelected] = useState(null);
 
   return (
     <section>
@@ -44,12 +46,12 @@ export default function PayslipsPage() {
             <tr>
               <th>Period</th>
               {view === 'org' && <th>Employee</th>}
-              <th>Gross pay</th><th>Deductions</th><th>Net pay</th><th>Status</th>
+              <th>Gross pay</th><th>Deductions</th><th>Net pay</th><th>Status</th><th></th>
             </tr>
           </thead>
           <tbody>
             {!rows?.length && (
-              <tr><td colSpan={view === 'org' ? 6 : 5} style={{ textAlign: 'center', color: 'var(--ink-faint)' }}>No payslips yet</td></tr>
+              <tr><td colSpan={view === 'org' ? 7 : 6} style={{ textAlign: 'center', color: 'var(--ink-faint)' }}>No payslips yet</td></tr>
             )}
             {rows?.map((r) => {
               const [pillCls, pillLabel] = STATUS_PILL[r.status] || ['neutral', r.status];
@@ -68,12 +70,15 @@ export default function PayslipsPage() {
                   <td className="mono">₹{fmtMoney(r.deductions)}</td>
                   <td className="mono"><b>₹{fmtMoney(r.netPay)}</b></td>
                   <td><span className={'pill ' + pillCls}>{pillLabel}</span></td>
+                  <td><button type="button" className="attachments-toggle" onClick={() => setSelected(r)}>View</button></td>
                 </tr>
               );
             })}
           </tbody>
         </table>
       </div>
+
+      {selected && <PayslipDetailModal payslip={selected} onClose={() => setSelected(null)} />}
     </section>
   );
 }

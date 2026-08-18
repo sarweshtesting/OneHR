@@ -1,6 +1,8 @@
 package com.nforceone.nforcehq.finance;
 
 import com.nforceone.nforcehq.common.ApiException;
+import com.nforceone.nforcehq.org.Organization;
+import com.nforceone.nforcehq.org.OrganizationRepository;
 import com.nforceone.nforcehq.security.JwtPrincipal;
 import com.nforceone.nforcehq.user.User;
 import com.nforceone.nforcehq.user.UserRepository;
@@ -22,13 +24,15 @@ public class PayslipController {
 
     private final PayslipRepository payslipRepository;
     private final UserRepository userRepository;
+    private final OrganizationRepository organizationRepository;
 
     @GetMapping("/me")
     public List<PayslipView> mine(@AuthenticationPrincipal JwtPrincipal principal) {
         User self = userRepository.findById(principal.userId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"));
+        String orgName = organizationName(self.getOrganizationId());
         return payslipRepository.findByUserIdOrderByPeriodMonthDesc(principal.userId()).stream()
-                .map(p -> toView(p, self))
+                .map(p -> toView(p, self, orgName))
                 .toList();
     }
 
@@ -41,17 +45,26 @@ public class PayslipController {
         }
         Map<UUID, User> usersById = userRepository.findByOrganizationId(organizationId).stream()
                 .collect(java.util.stream.Collectors.toMap(User::getId, u -> u));
+        String orgName = organizationName(organizationId);
 
         return payslipRepository.findByOrganizationIdOrderByPeriodMonthDescUserIdAsc(organizationId).stream()
-                .map(p -> toView(p, usersById.get(p.getUserId())))
+                .map(p -> toView(p, usersById.get(p.getUserId()), orgName))
                 .toList();
     }
 
-    private PayslipView toView(Payslip p, User user) {
+    private String organizationName(UUID organizationId) {
+        if (organizationId == null) return null;
+        return organizationRepository.findById(organizationId).map(Organization::getName).orElse(null);
+    }
+
+    private PayslipView toView(Payslip p, User user, String orgName) {
         return new PayslipView(
                 p.getId(), p.getUserId(),
                 user != null ? user.getFullName() : "Former employee",
                 user != null ? user.getAvatarInitials() : "?",
+                user != null ? user.getEmployeeCode() : null,
+                user != null ? user.getJobTitle() : null,
+                orgName,
                 p.getPeriodMonth(), p.getGrossPay(), p.getDeductions(), p.getNetPay(), p.getStatus());
     }
 }
