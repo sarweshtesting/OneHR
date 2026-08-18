@@ -61,13 +61,14 @@ export default function OverviewPage() {
     return `${fmtDuration(attendance.totalWorkedMinutes || 0)} worked today`;
   }
 
-  // Colors follow the shift-rail legend's own naming (Office = red, WFH = white,
-  // Break = dimmed red since you're paused mid-shift, Remaining/idle = faint).
+  // Traffic-light semantics: green = actively on the clock, red = paused on break,
+  // faint = not clocked in yet, white = shift finished. Mode (Office/WFH) is already
+  // shown as text, so color is spent on live status instead of location.
   function timeColor() {
     if (!attendance || !attendance.clockInAt) return 'var(--on-black-faint)';
     if (attendance.clockOutAt) return 'var(--on-black)';
-    if (attendance.onBreak) return 'rgba(216,30,39,0.6)';
-    return attendance.mode === 'WFH' ? 'var(--on-black)' : 'var(--red)';
+    if (attendance.onBreak) return 'rgba(216,30,39,0.75)';
+    return 'var(--green)';
   }
 
   const notClockedInOrDone = !attendance || !attendance.clockInAt || attendance.clockOutAt;
@@ -100,7 +101,11 @@ export default function OverviewPage() {
             <div className="hero-clock">
               <div className="time" style={{ color: timeColor() }}>{timeString}</div>
               <div className="elapsed" style={{ color: timeColor() }}>{elapsedText()}</div>
-              <button className={'clock-btn' + (notClockedInOrDone ? ' out' : '')} disabled={shiftComplete} onClick={handleClockToggle}>
+              <button
+                className={'clock-btn' + (notClockedInOrDone ? ' out' : attendance?.onBreak ? ' on-break' : '')}
+                disabled={shiftComplete}
+                onClick={handleClockToggle}
+              >
                 {notClockedInOrDone ? <IconClockIn /> : <IconClockOut />}
                 <span>{clockLabel}</span>
               </button>

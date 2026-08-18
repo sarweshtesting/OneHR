@@ -25,6 +25,11 @@
   --on-black-soft: #b8b8ba;
   --on-black-faint: #7d7d80;
 
+  /* Green — semantic "active/live" status only (clocked in), never the brand accent */
+  --green: #1f9d55;
+  --green-dark: #167a42;
+  --green-soft: #e6f6ec;
+
   --radius: 10px;
   --radius-sm: 6px;
 
@@ -53,6 +58,9 @@
     --red-dark: #ff5a63;
     --red-soft: #3a161a;
     --red-soft-strong: #4a1c21;
+
+    --green-dark: #3ecb7a;
+    --green-soft: #123420;
   }
 }
 
@@ -70,4 +78,7 @@
   --red-dark: #ff5a63;
   --red-soft: #3a161a;
   --red-soft-strong: #4a1c21;
+
+  --green-dark: #3ecb7a;
+  --green-soft: #123420;
 }
