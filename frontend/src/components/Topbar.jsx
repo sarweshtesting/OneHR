@@ -1,9 +1,10 @@
 import { useAuth } from '../context/AuthContext';
 import { useAttendance } from '../context/AttendanceContext';
 import { useClock } from '../hooks/useClock';
-import { IconSearch } from './icons';
+import { IconCheck } from './icons';
 import NotificationBell from './NotificationBell';
 import UserMenu from './UserMenu';
+import GlobalSearch from './GlobalSearch';
 
 export default function Topbar() {
   const { user, organizations, selectedOrgId, selectOrg } = useAuth();
@@ -58,20 +59,17 @@ export default function Topbar() {
         )}
       </div>
 
-      <div className="search-box">
-        <IconSearch />
-        Search people, requests, records…
-      </div>
+      <GlobalSearch />
 
       <div className="topbar-right">
         <div className="mini-clock"><span className="dot" /><span>{timeString} IST</span></div>
         <button
-          className={'topbar-clock-btn' + (clockedIn ? ' on' : '')}
+          className={'topbar-clock-btn' + (shiftComplete ? ' done' : clockedIn ? (attendance?.onBreak ? ' on-break' : ' on') : '')}
           onClick={handleClockToggle}
           disabled={shiftComplete}
           title={shiftComplete ? 'Shift complete' : clockLabel}
         >
-          <span className="topbar-clock-dot" />
+          {shiftComplete ? <IconCheck /> : <span className="topbar-clock-dot" />}
           <span>{clockLabel}</span>
         </button>
         <NotificationBell />
