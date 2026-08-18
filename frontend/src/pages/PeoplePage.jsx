@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { roleLabel } from '../utils/roles';
 import { IconChevronDown } from '../components/icons';
 import AddPersonModal from '../components/AddPersonModal';
+import BackButton from '../components/BackButton';
 
 function groupByDepartment(people) {
   const groups = new Map();
@@ -34,7 +35,10 @@ export default function PeoplePage() {
   return (
     <section>
       <div className="page-head">
-        <h1>People</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <BackButton />
+          <h1>People</h1>
+        </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
           <div className="date">{people?.length || 0} people</div>
           {canManagePeople && <button type="button" className="btn-mini primary" onClick={() => setAddOpen(true)}>+ Add person</button>}
