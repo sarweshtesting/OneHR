@@ -18,6 +18,7 @@ import AppraisalPage from './pages/AppraisalPage';
 import PeoplePage from './pages/PeoplePage';
 import FinanceChatPage from './pages/FinanceChatPage';
 import PayslipsPage from './pages/PayslipsPage';
+import ClientTrackingPage from './pages/ClientTrackingPage';
 
 export default function App() {
   return (
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/appraisal" element={<AppraisalPage />} />
           <Route path="/people" element={<PeoplePage />} />
           <Route path="/payslips" element={<PayslipsPage />} />
+          <Route path="/client-tracking" element={<ClientTrackingPage />} />
           <Route element={<RequireFinanceAccess />}>
             <Route path="/finance" element={<FinanceChatPage />} />
           </Route>

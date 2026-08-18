@@ -118,7 +118,7 @@ export default function Sidebar() {
           {canAccessFinance
             ? <NavItem to="/finance" icon={<IconChat />}>Finance chat</NavItem>
             : <InertNavItem icon={<IconChat />}>Finance chat</InertNavItem>}
-          <InertNavItem icon={<IconClientTracking />}>Client Tracking</InertNavItem>
+          <NavItem to="/client-tracking" icon={<IconClientTracking />}>Client Tracking</NavItem>
         </NavGroup>
 
         <NavGroup label="Governance" icon={<IconAdmin />}>
