@@ -9,7 +9,7 @@ import {
 const CAL_STATUS_CLASS = {
   HOLIDAY: 'holiday', WEEKLY_OFF: 'weekly-off', ON_LEAVE: 'on-leave', WFH_ON_DUTY: 'wfh', MISSING_ATTENDANCE: 'missing', PRESENT: '',
 };
-const WEEKDAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+const WEEKDAY_LETTERS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const TABS = ['Overview', 'Efforts / Punctuality', 'Negligence', 'Regularize & Cancel Penalties', 'Employee Assignments', 'Reports'];
 const STATUS_FILTERS = ['All', 'In', 'Out', 'Not in yet', 'On leave'];
@@ -46,15 +46,19 @@ function TeamMiniList({ items, empty }) {
   if (!items.length) {
     return <div className="panel-empty">{empty}</div>;
   }
-  return items.map((m) => (
-    <div className="team-row" key={m.id}>
-      <div className="avatar-circle">{m.avatarInitials || '?'}</div>
-      <div className="team-meta">
-        <div className="name">{m.name}</div>
-        <div className="role">{m.jobTitle || ''}</div>
-      </div>
+  return (
+    <div className="team-mini-scroll scroll-polished">
+      {items.map((m) => (
+        <div className="team-row" key={m.id}>
+          <div className="avatar-circle">{m.avatarInitials || '?'}</div>
+          <div className="team-meta">
+            <div className="name">{m.name}</div>
+            <div className="role">{m.jobTitle || ''}</div>
+          </div>
+        </div>
+      ))}
     </div>
-  ));
+  );
 }
 
 function CalendarGrid({ days, rows, todayNum, tall, mode }) {
@@ -432,8 +436,7 @@ export default function MyTeamPage() {
         <div className="page-head-text">
           <h1>My Team</h1>
           <div className="page-desc">
-            Attendance, leave, and open requests for your direct reports, all in one place, so you don&apos;t have to
-            check four separate pages to know how your team is doing today.
+            Attendance, leave, and open requests for your direct reports, all in one place.
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
@@ -443,7 +446,7 @@ export default function MyTeamPage() {
       </div>
 
       <div className="attendance-toolbar">
-        <div className="seg-control">
+        <div className="seg-control full-width">
           {TABS.map((t) => (
             <button key={t} className={'seg-btn' + (tab === t ? ' active' : '')} onClick={() => setTab(t)}>{t}</button>
           ))}

@@ -43,9 +43,12 @@
 
 .team-roster-toolbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px 18px; }
 .team-roster-scroll { max-height: 292px; overflow: auto; }
+.team-mini-scroll { max-height: 220px; overflow: auto; }
 .seg-control.gapped { gap: 6px; background: transparent; border: none; padding: 0; }
 .seg-control.gapped .seg-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
 .seg-control.gapped .seg-btn.active { background: var(--black); color: var(--white); border-color: var(--black); }
+.seg-control.full-width { flex: 1; }
+.seg-control.full-width .seg-btn { flex: 1; }
 .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: var(--ink-faint); }
 .status-dot.in { background: var(--red); }
 .status-dot.wfh { background: var(--ink); }
