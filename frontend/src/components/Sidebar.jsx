@@ -119,12 +119,7 @@ export default function Sidebar() {
       </div>
 
       <div className="sidebar-footer">
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <span className="role-pill">
-            <span className="role-dot" />
-            <span>Signed in as {roleLabel(user?.role)}</span>
-          </span>
-        </div>
+        <div className="role-name">{roleLabel(user?.role)}</div>
       </div>
     </nav>
   );

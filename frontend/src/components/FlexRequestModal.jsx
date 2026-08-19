@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { apiFetch } from '../api/client';
 import Modal from './Modal';
+import AutoTextarea from './AutoTextarea';
 
 const TYPE_OPTIONS = [
   { value: 'WFH', label: 'Work From Home', needsHours: false },
-  { value: 'PARTIAL_DAY_LATE_ARRIVAL', label: 'Partial Day — Late Arrival', needsHours: true },
-  { value: 'PARTIAL_DAY_LEAVING_EARLY', label: 'Partial Day — Leaving Early', needsHours: true },
+  { value: 'PARTIAL_DAY_LATE_ARRIVAL', label: 'Partial Day (Late Arrival)', needsHours: true },
+  { value: 'PARTIAL_DAY_LEAVING_EARLY', label: 'Partial Day (Leaving Early)', needsHours: true },
   { value: 'OVERTIME', label: 'Overtime', needsHours: true },
 ];
 
@@ -74,7 +75,7 @@ export default function FlexRequestModal({ defaultType, onClose, onSubmitted }) 
         <div className="form-row single">
           <div className="form-field">
             <label>Reason</label>
-            <textarea required placeholder="Why are you requesting this?" value={form.reason} onChange={(e) => setField('reason', e.target.value)} />
+            <AutoTextarea required placeholder="Why are you requesting this?" value={form.reason} onChange={(e) => setField('reason', e.target.value)} />
           </div>
         </div>
         <button type="submit" className="btn-submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit request'}</button>

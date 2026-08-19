@@ -1,7 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import AttentionPanel from '../components/overview/AttentionPanel';
-import { IconChevronDown } from '../components/icons';
+import {
+  IconChevronDown, IconCheck, IconClock, IconHome, IconClockIn,
+  IconWarningTriangle, IconTeamDirectory, IconMaximize, IconMinimize,
+} from '../components/icons';
 
 const CAL_STATUS_CLASS = {
   HOLIDAY: 'holiday', WEEKLY_OFF: 'weekly-off', ON_LEAVE: 'on-leave', WFH_ON_DUTY: 'wfh', MISSING_ATTENDANCE: 'missing', PRESENT: '',
@@ -31,6 +34,14 @@ function monthKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
 }
 
+function toIsoDate(date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function clamp(value, min, max) {
+  return Math.max(min, Math.min(value, max));
+}
+
 function TeamMiniList({ items, empty }) {
   if (!items.length) {
     return <div className="panel-empty">{empty}</div>;
@@ -46,89 +57,178 @@ function TeamMiniList({ items, empty }) {
   ));
 }
 
+function CalendarGrid({ days, rows, todayNum, tall }) {
+  return (
+    <>
+      <div className={'team-cal-scroll scroll-polished' + (tall ? ' tall' : '')}>
+        <table className="team-cal-table">
+          <thead>
+            <tr>
+              <th className="team-cal-name"></th>
+              {days.map((d) => {
+                const dow = new Date(d.date).getDay();
+                return (
+                  <th key={d.date} className={dow === 0 || dow === 6 ? 'tc-weekend' : ''}>
+                    <div className="team-cal-dow">{WEEKDAY_LETTERS[dow]}</div>
+                    {new Date(d.date).getDate()}
+                  </th>
+                );
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.userId}>
+                <td className="team-cal-name">
+                  <div className="team-cal-name-inner">
+                    <div className="avatar-circle">{row.avatarInitials || '?'}</div>
+                    {row.userName}
+                  </div>
+                </td>
+                {row.days.map((d) => {
+                  const dayNum = new Date(d.date).getDate();
+                  const dow = new Date(d.date).getDay();
+                  const cls = CAL_STATUS_CLASS[d.status] || '';
+                  return (
+                    <td key={d.date} className={dow === 0 || dow === 6 ? 'tc-weekend' : ''}>
+                      <span className={'tc-day' + (cls ? ' ' + cls : '') + (dayNum === todayNum ? ' today' : '')}>{dayNum}</span>
+                    </td>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <div className="team-cal-legend">
+        <span className="team-cal-legend-item"><span className="team-cal-legend-dot holiday" />Holiday</span>
+        <span className="team-cal-legend-item"><span className="team-cal-legend-dot weekly-off" />Weekly off</span>
+        <span className="team-cal-legend-item"><span className="team-cal-legend-dot on-leave" />On leave</span>
+        <span className="team-cal-legend-item"><span className="team-cal-legend-dot wfh" />WFH / on duty</span>
+        <span className="team-cal-legend-item"><span className="team-cal-legend-dot missing" />Missing attendance</span>
+      </div>
+    </>
+  );
+}
+
 function TeamCalendar() {
-  const [cursor, setCursor] = useState(() => new Date());
-  const { data: calendar, loading } = useApi('/api/team/calendar?month=' + monthKey(cursor));
+  const [selectedDate, setSelectedDate] = useState(() => new Date());
+  const [viewMode, setViewMode] = useState('week');
+  const [maximized, setMaximized] = useState(false);
+  const { data: calendar, loading } = useApi('/api/team/calendar?month=' + monthKey(selectedDate));
+
+  useEffect(() => {
+    if (!maximized) return;
+    document.body.style.overflow = 'hidden';
+    function onKeyDown(e) {
+      if (e.key === 'Escape') setMaximized(false);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.body.style.overflow = '';
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [maximized]);
 
   const today = new Date();
-  const isCurrentMonth = today.getFullYear() === cursor.getFullYear() && today.getMonth() === cursor.getMonth();
-  const todayDate = isCurrentMonth ? today.getDate() : -1;
-  const monthLabel = cursor.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+  const isCurrentMonth = today.getFullYear() === selectedDate.getFullYear() && today.getMonth() === selectedDate.getMonth();
+  const todayNum = isCurrentMonth ? today.getDate() : -1;
+  const monthLabel = selectedDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+
+  const rawDays = calendar?.[0]?.days || [];
+  const showFullMonth = maximized || viewMode === 'month';
+  const weekOffset = clamp(Math.floor((selectedDate.getDate() - 1) / 7) * 7, 0, Math.max(0, rawDays.length - 7));
+  const visibleDays = showFullMonth ? rawDays : rawDays.slice(weekOffset, weekOffset + 7);
+  const visibleRows = useMemo(() => {
+    if (!calendar) return [];
+    return calendar.map((row) => ({ ...row, days: showFullMonth ? row.days : row.days.slice(weekOffset, weekOffset + 7) }));
+  }, [calendar, showFullMonth, weekOffset]);
 
   function shiftMonth(delta) {
-    setCursor((d) => new Date(d.getFullYear(), d.getMonth() + delta, 1));
+    setSelectedDate((d) => new Date(d.getFullYear(), d.getMonth() + delta, 1));
   }
 
-  return (
-    <div className="panel" style={{ marginBottom: 16 }}>
-      <div className="panel-head">
-        <h2>Team calendar</h2>
+  function shiftWeek(delta) {
+    setSelectedDate((d) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + delta * 7));
+  }
+
+  function handleDatePick(e) {
+    if (!e.target.value) return;
+    const [y, m, d] = e.target.value.split('-').map(Number);
+    setSelectedDate(new Date(y, m - 1, d));
+  }
+
+  const toolbar = (
+    <div className="team-cal-toolbar">
+      <input type="date" className="team-cal-datepick" value={toIsoDate(selectedDate)} onChange={handleDatePick} aria-label="Jump to date" />
+      <div className="seg-control">
+        <button type="button" className={'seg-btn' + (viewMode === 'week' && !maximized ? ' active' : '')} onClick={() => setViewMode('week')} disabled={maximized}>Week</button>
+        <button type="button" className={'seg-btn' + (viewMode === 'month' || maximized ? ' active' : '')} onClick={() => setViewMode('month')}>Month</button>
+      </div>
+      {viewMode === 'week' && !maximized && (
         <div className="team-cal-nav">
-          <button type="button" className="panel-toggle" onClick={() => shiftMonth(-1)} aria-label="Previous month">
+          <button type="button" className="panel-toggle" onClick={() => shiftWeek(-1)} aria-label="Previous week">
             <span style={{ display: 'inline-flex', transform: 'rotate(90deg)' }}><IconChevronDown /></span>
           </button>
-          <span className="team-cal-month">{monthLabel}</span>
-          <button type="button" className="panel-toggle" onClick={() => shiftMonth(1)} aria-label="Next month">
+          <button type="button" className="panel-toggle" onClick={() => shiftWeek(1)} aria-label="Next week">
             <span style={{ display: 'inline-flex', transform: 'rotate(-90deg)' }}><IconChevronDown /></span>
           </button>
-          <span className="pill neutral">{calendar?.length || 0} people</span>
         </div>
+      )}
+      <div className="team-cal-nav" style={{ marginLeft: 'auto' }}>
+        <button type="button" className="panel-toggle" onClick={() => shiftMonth(-1)} aria-label="Previous month">
+          <span style={{ display: 'inline-flex', transform: 'rotate(90deg)' }}><IconChevronDown /></span>
+        </button>
+        <span className="team-cal-month">{monthLabel}</span>
+        <button type="button" className="panel-toggle" onClick={() => shiftMonth(1)} aria-label="Next month">
+          <span style={{ display: 'inline-flex', transform: 'rotate(-90deg)' }}><IconChevronDown /></span>
+        </button>
       </div>
+    </div>
+  );
 
+  const body = (
+    <>
       {loading && <div className="panel-empty">Loading…</div>}
       {!loading && !calendar?.length && <div className="panel-empty">No direct reports to show</div>}
-      {!loading && calendar?.length > 0 && (
-        <>
-          <div className="team-cal-scroll">
-            <table className="team-cal-table">
-              <thead>
-                <tr>
-                  <th className="team-cal-name"></th>
-                  {calendar[0].days.map((d) => {
-                    const dow = new Date(d.date).getDay();
-                    return (
-                      <th key={d.date} className={dow === 0 || dow === 6 ? 'tc-weekend' : ''}>
-                        <div className="team-cal-dow">{WEEKDAY_LETTERS[dow]}</div>
-                        {new Date(d.date).getDate()}
-                      </th>
-                    );
-                  })}
-                </tr>
-              </thead>
-              <tbody>
-                {calendar.map((row) => (
-                  <tr key={row.userId}>
-                    <td className="team-cal-name">
-                      <div className="team-cal-name-inner">
-                        <div className="avatar-circle">{row.avatarInitials || '?'}</div>
-                        {row.userName}
-                      </div>
-                    </td>
-                    {row.days.map((d) => {
-                      const dayNum = new Date(d.date).getDate();
-                      const dow = new Date(d.date).getDay();
-                      const cls = CAL_STATUS_CLASS[d.status] || '';
-                      return (
-                        <td key={d.date} className={dow === 0 || dow === 6 ? 'tc-weekend' : ''}>
-                          <span className={'tc-day' + (cls ? ' ' + cls : '') + (dayNum === todayDate ? ' today' : '')}>{dayNum}</span>
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {!loading && calendar?.length > 0 && <CalendarGrid days={visibleDays} rows={visibleRows} todayNum={todayNum} tall={maximized} />}
+    </>
+  );
+
+  return (
+    <>
+      <div className="panel" style={{ marginBottom: 16 }}>
+        <div className="panel-head">
+          <h2>Team calendar</h2>
+          <div className="team-cal-head-actions">
+            <span className="pill neutral">{calendar?.length || 0} people</span>
+            <button type="button" className="panel-toggle" onClick={() => setMaximized(true)} aria-label="Maximize calendar" title="Expand to full month">
+              <IconMaximize />
+            </button>
           </div>
-          <div className="team-cal-legend">
-            <span className="team-cal-legend-item"><span className="team-cal-legend-dot holiday" />Holiday</span>
-            <span className="team-cal-legend-item"><span className="team-cal-legend-dot weekly-off" />Weekly off</span>
-            <span className="team-cal-legend-item"><span className="team-cal-legend-dot on-leave" />On leave</span>
-            <span className="team-cal-legend-item"><span className="team-cal-legend-dot wfh" />WFH / on duty</span>
-            <span className="team-cal-legend-item"><span className="team-cal-legend-dot missing" />Missing attendance</span>
+        </div>
+        {toolbar}
+        {body}
+      </div>
+
+      {maximized && (
+        <div className="team-cal-overlay" onClick={() => setMaximized(false)}>
+          <div className="team-cal-overlay-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="panel-head">
+              <h2>Team calendar</h2>
+              <div className="team-cal-head-actions">
+                <span className="pill neutral">{calendar?.length || 0} people</span>
+                <button type="button" className="panel-toggle" onClick={() => setMaximized(false)} aria-label="Minimize calendar" title="Collapse">
+                  <IconMinimize />
+                </button>
+              </div>
+            </div>
+            {toolbar}
+            {body}
           </div>
-        </>
+        </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -164,12 +264,30 @@ function OverviewTab() {
 
       {stats && (
         <div className="stats-row cols-6">
-          <div className="stat-card"><div className="stat-label">Team size</div><div className="stat-value">{stats.teamSize}</div></div>
-          <div className="stat-card"><div className="stat-label">Employees on time</div><div className="stat-value">{stats.employeesOnTime}</div></div>
-          <div className="stat-card"><div className="stat-label">Late arrivals</div><div className="stat-value">{stats.lateArrivals}</div></div>
-          <div className="stat-card"><div className="stat-label">WFH / on duty</div><div className="stat-value">{stats.wfhOnDuty}</div></div>
-          <div className="stat-card"><div className="stat-label">Remote clock-ins</div><div className="stat-value">{stats.remoteClockIns}</div></div>
-          <div className="stat-card"><div className="stat-label">Needs your attention</div><div className="stat-value">{stats.needsAttentionCount}</div></div>
+          <div className="stat-card">
+            <div className="stat-top"><span className="stat-label">Team size</span><div className="stat-icon"><IconTeamDirectory /></div></div>
+            <div className="stat-value">{stats.teamSize}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-top"><span className="stat-label">Employees on time</span><div className="stat-icon"><IconCheck /></div></div>
+            <div className="stat-value">{stats.employeesOnTime}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-top"><span className="stat-label">Late arrivals</span><div className="stat-icon accent"><IconClock /></div></div>
+            <div className="stat-value">{stats.lateArrivals}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-top"><span className="stat-label">WFH / on duty</span><div className="stat-icon"><IconHome /></div></div>
+            <div className="stat-value">{stats.wfhOnDuty}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-top"><span className="stat-label">Remote clock-ins</span><div className="stat-icon"><IconClockIn /></div></div>
+            <div className="stat-value">{stats.remoteClockIns}</div>
+          </div>
+          <div className="stat-card">
+            <div className="stat-top"><span className="stat-label">Needs your attention</span><div className="stat-icon accent"><IconWarningTriangle /></div></div>
+            <div className="stat-value">{stats.needsAttentionCount}</div>
+          </div>
         </div>
       )}
 
@@ -234,19 +352,36 @@ function PunctualityTab() {
         </div>
 
         {!data?.leaderboard?.length && <div className="panel-empty">No attendance data for this range.</div>}
-        {data?.leaderboard?.map((p) => (
-          <div className="team-lb-row" key={p.userId}>
-            <div className="avatar-circle">{p.avatarInitials || '?'}</div>
-            <div className="team-lb-meta">
-              <div className="name">{p.userName}</div>
-              <div className="title">{p.jobTitle || ''}</div>
+        {data?.leaderboard?.length > 0 && (
+          <>
+            <div className="team-lb-head-row">
+              <span>Employee</span>
+              <span></span>
+              <span className="lb-col-pct">%</span>
+              <span className="lb-col-num">On-time</span>
+              <span className="lb-col-num">Days</span>
             </div>
-            <div className="team-lb-bar-wrap">
-              <div className="lb-bar"><div className="lb-bar-fill" style={{ width: p.onTimePercent + '%' }} /></div>
+            <div className="team-lb-scroll scroll-polished">
+              {data.leaderboard.map((p) => (
+                <div className="team-lb-row" key={p.userId}>
+                  <div className="team-lb-meta">
+                    <div className="avatar-circle">{p.avatarInitials || '?'}</div>
+                    <div className="team-lb-meta-text">
+                      <div className="name">{p.userName}</div>
+                      <div className="title">{p.jobTitle || ''}</div>
+                    </div>
+                  </div>
+                  <div className="team-lb-bar-wrap">
+                    <div className="lb-bar"><div className="lb-bar-fill" style={{ width: p.onTimePercent + '%' }} /></div>
+                  </div>
+                  <div className="lb-col-pct">{p.onTimePercent}%</div>
+                  <div className="lb-col-num">{p.onTimeDays}</div>
+                  <div className="lb-col-num">{p.totalDays}</div>
+                </div>
+              ))}
             </div>
-            <div className="team-lb-stat">{p.onTimePercent}% on time · {p.onTimeDays}/{p.totalDays} days</div>
-          </div>
-        ))}
+          </>
+        )}
 
         {data?.dailyCounts?.length > 0 && (
           <div className="team-daily-chart">
@@ -264,17 +399,17 @@ function PunctualityTab() {
         <div className="stat-card">
           <div className="stat-label">Avg. on time / day</div>
           <div className="stat-value">{data ? data.avgOnTimePerDay.toFixed(1) : '0.0'}</div>
-          <div className="team-lb-stat" style={{ width: 'auto', textAlign: 'left' }}>employees, this range</div>
+          <div className="team-lb-caption">employees, this range</div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Min. on time / day</div>
           <div className="stat-value">{data?.minOnTimePerDay ?? 0}</div>
-          <div className="team-lb-stat" style={{ width: 'auto', textAlign: 'left' }}>lowest single day</div>
+          <div className="team-lb-caption">lowest single day</div>
         </div>
         <div className="stat-card">
           <div className="stat-label">Max. on time / day</div>
           <div className="stat-value">{data?.maxOnTimePerDay ?? 0}</div>
-          <div className="team-lb-stat" style={{ width: 'auto', textAlign: 'left' }}>highest single day</div>
+          <div className="team-lb-caption">highest single day</div>
         </div>
       </div>
     </>
@@ -291,8 +426,8 @@ export default function MyTeamPage() {
         <div className="page-head-text">
           <h1>My Team</h1>
           <div className="page-desc">
-            Attendance, leave, and open requests for your direct reports — one place, so you don&apos;t have to check
-            four separate pages to know how your team is doing today.
+            Attendance, leave, and open requests for your direct reports, all in one place, so you don&apos;t have to
+            check four separate pages to know how your team is doing today.
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>

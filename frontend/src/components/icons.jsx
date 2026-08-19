@@ -102,3 +102,9 @@ export const IconHome = () => (
 export const IconDocument = () => (
   <svg {...base}><path d="M6 3h9l4 4v14H6z" /><path d="M15 3v4h4" /><path d="M9 12h6M9 16h6" /></svg>
 );
+export const IconMaximize = () => (
+  <svg {...base}><path d="M9 4H5a1 1 0 0 0-1 1v4M15 4h4a1 1 0 0 1 1 1v4M9 20H5a1 1 0 0 1-1-1v-4M15 20h4a1 1 0 0 0 1-1v-4" /></svg>
+);
+export const IconMinimize = () => (
+  <svg {...base}><path d="M4 9h4a1 1 0 0 0 1-1V4M20 9h-4a1 1 0 0 1-1-1V4M4 15h4a1 1 0 0 1 1 1v4M20 15h-4a1 1 0 0 0-1 1v4" /></svg>
+);

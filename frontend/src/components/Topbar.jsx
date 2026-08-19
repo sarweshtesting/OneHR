@@ -44,18 +44,15 @@ export default function Topbar() {
 
   return (
     <header className="topbar">
-      <div className="org-switch">
-        <div className="avatar-sq" />
-        {isPlatformAdmin ? (
+      {isPlatformAdmin && (
+        <div className="org-switch">
           <select className="org-select" value={selectedOrgId || ''} onChange={(e) => handleOrgChange(e.target.value)}>
             {organizations.map((o) => (
               <option key={o.id} value={o.id}>{o.name}</option>
             ))}
           </select>
-        ) : (
-          <span>{currentOrgName || '—'}</span>
-        )}
-      </div>
+        </div>
+      )}
 
       <GlobalSearch />
 

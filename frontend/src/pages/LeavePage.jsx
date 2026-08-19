@@ -4,6 +4,7 @@ import { apiFetch, apiUpload } from '../api/client';
 import { fmtDateRange } from '../utils/format';
 import LeaveAttachments from '../components/LeaveAttachments';
 import BackButton from '../components/BackButton';
+import AutoTextarea from '../components/AutoTextarea';
 
 const STATUS_CLASS = { APPROVED: 'approved', PENDING: 'pending', REJECTED: 'rejected', CANCELLED: 'rejected' };
 
@@ -111,7 +112,7 @@ export default function LeavePage() {
           <div className="form-row single">
             <div className="form-field">
               <label>Reason / justification</label>
-              <textarea placeholder="Brief note for your approver…" value={form.reason} onChange={(e) => setField('reason', e.target.value)} />
+              <AutoTextarea placeholder="Brief note for your approver…" value={form.reason} onChange={(e) => setField('reason', e.target.value)} />
             </div>
           </div>
           <div className="form-row single">

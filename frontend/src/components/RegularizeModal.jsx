@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { apiFetch } from '../api/client';
 import Modal from './Modal';
+import AutoTextarea from './AutoTextarea';
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
@@ -66,7 +67,7 @@ export default function RegularizeModal({ onClose, onSubmitted }) {
         <div className="form-row single">
           <div className="form-field">
             <label>Reason</label>
-            <textarea required placeholder="Why does this day need correcting?" value={form.reason} onChange={(e) => setField('reason', e.target.value)} />
+            <AutoTextarea required placeholder="Why does this day need correcting?" value={form.reason} onChange={(e) => setField('reason', e.target.value)} />
           </div>
         </div>
         <button type="submit" className="btn-submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit request'}</button>

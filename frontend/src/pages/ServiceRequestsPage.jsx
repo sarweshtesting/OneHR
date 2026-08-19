@@ -2,6 +2,7 @@ import { Fragment, useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import { apiFetch } from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import AutoTextarea from '../components/AutoTextarea';
 
 const TYPE_LABELS = {
   HR_QUERY: 'HR query',
@@ -109,7 +110,7 @@ export default function ServiceRequestsPage() {
           <div className="form-row single">
             <div className="form-field">
               <label>Description</label>
-              <textarea placeholder="Give HR the details they'll need…" required value={form.description} onChange={(e) => setField('description', e.target.value)} />
+              <AutoTextarea placeholder="Give HR the details they'll need…" required value={form.description} onChange={(e) => setField('description', e.target.value)} />
             </div>
           </div>
           <button type="submit" className="btn-submit" disabled={submitting}>{submitting ? 'Submitting…' : 'Submit request'}</button>
@@ -168,7 +169,7 @@ export default function ServiceRequestsPage() {
                         </div>
                         <div className="form-field" style={{ margin: '8px 0' }}>
                           <label>Resolution notes</label>
-                          <textarea value={notesDraft} onChange={(e) => setNotesDraft(e.target.value)} />
+                          <AutoTextarea value={notesDraft} onChange={(e) => setNotesDraft(e.target.value)} />
                         </div>
                         <button type="button" className="btn-mini primary" disabled={savingId === r.id} onClick={() => saveNotes(r)}>Save notes</button>
                       </td>

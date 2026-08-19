@@ -77,11 +77,12 @@
 .sidebar.collapsed .nav-group-children .nav-item .label { display: inline; }
 
 .sidebar-footer { margin-top: auto; padding: 12px 8px 4px 8px; border-top: 1px solid rgba(255,255,255,0.1); flex-shrink: 0; }
-.role-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--on-black-faint); padding-top: 10px; font-family: var(--font-mono); min-width: 0; }
-.role-pill span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.role-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
-.sidebar.collapsed .role-pill { display: none; }
-.sidebar.collapsed .sidebar-footer > div { justify-content: center; }
+.role-name {
+  font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--on-black-faint); text-align: center; padding-top: 10px; font-family: var(--font-mono);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sidebar.collapsed .role-name { display: none; }
 
 /* ---------- Theme toggle (icon-only, lives in the profile dropdown) ---------- */
 .header-dropdown-theme { display: flex; gap: 3px; background: var(--surface-alt); border-radius: 8px; padding: 3px; margin: 10px 16px 4px 16px; }
@@ -96,8 +97,7 @@
   height: 64px; background: var(--surface); border-bottom: 1px solid var(--border);
   display: flex; align-items: center; padding: 0 28px; gap: 20px; position: sticky; top: 0; z-index: 5;
 }
-.org-switch { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13.5px; padding: 6px 10px 6px 6px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
-.avatar-sq { width: 22px; height: 22px; border-radius: 5px; background: var(--black); flex-shrink: 0; }
+.org-switch { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13.5px; padding: 6px 10px; border-radius: var(--radius-sm); border: 1px solid var(--border); }
 .org-select { background: transparent; border: none; font-family: inherit; font-weight: 600; font-size: 13.5px; color: var(--ink); cursor: pointer; }
 .search-box { position: relative; flex: 1; max-width: 380px; display: flex; align-items: center; gap: 8px; background: var(--surface-alt); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 12px; color: var(--ink-faint); font-size: 13px; }
 .search-box:focus-within { border-color: var(--border-strong); background: var(--surface); }
