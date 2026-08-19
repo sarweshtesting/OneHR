@@ -71,13 +71,12 @@ export default function OverviewPage() {
     return 'var(--green)';
   }
 
-  const notClockedInOrDone = !attendance || !attendance.clockInAt || attendance.clockOutAt;
-  const shiftComplete = attendance && attendance.clockInAt && attendance.clockOutAt;
-  const clockLabel = !attendance || !attendance.clockInAt
-    ? 'Clock in'
-    : !attendance.clockOutAt
-      ? (attendance.onBreak ? 'On break — clock out' : 'Clock out')
-      : 'Shift complete';
+  // Checking out is never a dead end — clicking again any time today starts a new
+  // session, so "not currently clocked in" always means an actionable "Clock in".
+  const clockedIn = attendance && attendance.clockInAt && !attendance.clockOutAt;
+  const clockLabel = clockedIn
+    ? (attendance.onBreak ? 'On break — clock out' : 'Clock out')
+    : 'Clock in';
 
   async function handleApprovalsChanged() {
     await Promise.all([reloadApprovals(), reloadStats()]);
@@ -102,11 +101,11 @@ export default function OverviewPage() {
               <div className="time" style={{ color: timeColor() }}>{timeString}</div>
               <div className="elapsed" style={{ color: timeColor() }}>{elapsedText()}</div>
               <button
-                className={'clock-btn' + (notClockedInOrDone ? ' out' : attendance?.onBreak ? ' on-break' : '')}
-                disabled={shiftComplete || attendanceLoading}
+                className={'clock-btn' + (!clockedIn ? ' out' : attendance?.onBreak ? ' on-break' : '')}
+                disabled={attendanceLoading}
                 onClick={handleClockToggle}
               >
-                {notClockedInOrDone ? <IconClockIn /> : <IconClockOut />}
+                {!clockedIn ? <IconClockIn /> : <IconClockOut />}
                 <span>{clockLabel}</span>
               </button>
             </div>

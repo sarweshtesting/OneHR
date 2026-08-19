@@ -50,6 +50,11 @@ public class AttendanceRecord extends TenantAwareEntity {
     @Column(name = "total_worked_minutes")
     private Integer totalWorkedMinutes;
 
+    /** Worked minutes carried forward from earlier same-day sessions, so re-clocking in
+     * after a checkout can add the new session on top instead of overwriting history. */
+    @Column(name = "banked_minutes", nullable = false)
+    private int bankedMinutes = 0;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)

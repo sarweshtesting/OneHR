@@ -121,7 +121,6 @@
   display: flex; align-items: center; gap: 8px; padding: 7px 14px 7px 11px; border-radius: 20px; font-weight: 600;
   font-size: 12.6px; border: 1px solid var(--border); background: var(--surface); white-space: nowrap; color: var(--ink);
 }
-.topbar-clock-btn svg { width: 13px; height: 13px; flex-shrink: 0; }
 .topbar-clock-btn:hover:not(:disabled) { border-color: var(--border-strong); }
 .topbar-clock-btn:disabled { cursor: default; }
 .topbar-clock-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-faint); flex-shrink: 0; }
@@ -129,8 +128,6 @@
 .topbar-clock-btn.on .topbar-clock-dot { background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,0.35); animation: topbar-clock-pulse 1.8s ease-in-out infinite; }
 .topbar-clock-btn.on-break { background: var(--red-soft); border-color: var(--red-soft-strong); color: var(--red-dark); }
 .topbar-clock-btn.on-break .topbar-clock-dot { background: var(--red); }
-.topbar-clock-btn.done { background: var(--surface-alt); border-color: var(--border); color: var(--ink-soft); }
-.topbar-clock-btn.done .topbar-clock-dot { background: var(--ink-faint); }
 @media (prefers-reduced-motion: reduce) { .topbar-clock-btn.on .topbar-clock-dot { animation: none; } }
 @keyframes topbar-clock-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
 .icon-btn { width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; border-radius: var(--radius-sm); color: var(--ink-soft); position: relative; }

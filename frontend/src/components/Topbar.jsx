@@ -1,7 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 import { useAttendance } from '../context/AttendanceContext';
 import { useClock } from '../hooks/useClock';
-import { IconCheck } from './icons';
 import NotificationBell from './NotificationBell';
 import UserMenu from './UserMenu';
 import GlobalSearch from './GlobalSearch';
@@ -25,12 +24,11 @@ export default function Topbar() {
   }
 
   const clockedIn = attendance && attendance.clockInAt && !attendance.clockOutAt;
-  const shiftComplete = attendance && attendance.clockInAt && attendance.clockOutAt;
-  const clockLabel = !attendance || !attendance.clockInAt
-    ? 'Clock in'
-    : !attendance.clockOutAt
-      ? (attendance.onBreak ? 'On break' : 'Clock out')
-      : 'Shift complete';
+  // Clocking out is never a dead end — clicking again any time today starts a new
+  // session, so the button always reads "Clock in" rather than a disabled "complete" state.
+  const clockLabel = clockedIn
+    ? (attendance.onBreak ? 'On break' : 'Clock out')
+    : 'Clock in';
 
   async function handleClockToggle() {
     try {
@@ -64,12 +62,12 @@ export default function Topbar() {
       <div className="topbar-right">
         <div className="mini-clock"><span className="dot" /><span>{timeString} IST</span></div>
         <button
-          className={'topbar-clock-btn' + (shiftComplete ? ' done' : clockedIn ? (attendance?.onBreak ? ' on-break' : ' on') : '')}
+          className={'topbar-clock-btn' + (clockedIn ? (attendance?.onBreak ? ' on-break' : ' on') : '')}
           onClick={handleClockToggle}
-          disabled={shiftComplete || attendanceLoading}
-          title={shiftComplete ? 'Shift complete' : clockLabel}
+          disabled={attendanceLoading}
+          title={clockLabel}
         >
-          {shiftComplete ? <IconCheck /> : <span className="topbar-clock-dot" />}
+          <span className="topbar-clock-dot" />
           <span>{clockLabel}</span>
         </button>
         <NotificationBell />

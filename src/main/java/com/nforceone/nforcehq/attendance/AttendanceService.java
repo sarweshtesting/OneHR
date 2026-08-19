@@ -36,23 +36,28 @@ public class AttendanceService {
         ZoneId zone = zoneFor(organizationId);
         LocalDate workDate = LocalDate.now(zone);
 
-        attendanceRecordRepository
+        AttendanceRecord record = attendanceRecordRepository
                 .findByUserIdAndOrganizationIdAndWorkDate(principal.userId(), organizationId, workDate)
-                .ifPresent(existing -> {
-                    if (existing.getClockOutAt() == null) {
-                        throw new ApiException(HttpStatus.CONFLICT, "Already clocked in for today");
-                    }
-                    throw new ApiException(HttpStatus.CONFLICT, "Today's shift is already complete");
-                });
+                .orElseGet(AttendanceRecord::new);
 
-        AttendanceRecord record = new AttendanceRecord();
+        if (record.getClockInAt() != null && record.getClockOutAt() == null) {
+            throw new ApiException(HttpStatus.CONFLICT, "Already clocked in for today");
+        }
+        // Re-clocking in after an earlier checkout today: bank what was already worked
+        // so the next clock-out adds this session on top instead of overwriting it.
+        if (record.getClockOutAt() != null) {
+            record.setBankedMinutes(record.getBankedMinutes() + (record.getTotalWorkedMinutes() != null ? record.getTotalWorkedMinutes() : 0));
+        }
+
         record.setOrganizationId(organizationId);
         record.setUserId(principal.userId());
         record.setWorkDate(workDate);
         record.setClockInAt(Instant.now());
+        record.setClockOutAt(null);
         record.setMode(request != null && request.mode() != null ? request.mode() : AttendanceMode.OFFICE);
         record.setStatus(AttendanceStatus.IN_PROGRESS);
         record.setSource(AttendanceSource.WEB_CLOCK);
+        record.setClientId(request != null ? request.clientId() : null);
 
         if (request != null && request.clientId() != null) {
             Client client = clientRepository.findById(request.clientId())
@@ -63,27 +68,38 @@ public class AttendanceService {
 
         attendanceRecordRepository.save(record);
 
-        return toResponse(record, List.of());
+        return toResponse(record, breaksFor(record.getId()));
     }
 
     @Transactional
     public AttendanceTodayResponse clockOut(JwtPrincipal principal) {
         AttendanceRecord record = requireOpenRecord(principal);
         ZoneId zone = zoneFor(record.getOrganizationId());
+        Instant sessionStart = record.getClockInAt();
 
         attendanceBreakRepository.findFirstByAttendanceRecordIdAndBreakEndAtIsNull(record.getId())
                 .ifPresent(openBreak -> closeBreak(record, openBreak, Instant.now()));
 
         Instant now = Instant.now();
         record.setClockOutAt(now);
-        long totalMinutes = Duration.between(record.getClockInAt(), now).toMinutes();
-        int workedMinutes = (int) Math.max(0, totalMinutes - record.getTotalBreakMinutes());
-        record.setTotalWorkedMinutes(workedMinutes);
+
+        // Only this session's breaks count against this session's span — totalBreakMinutes
+        // is cumulative across the whole day and would double-subtract earlier sessions'
+        // breaks if used directly here (they already reduced an earlier banked total).
+        long sessionBreakMinutes = attendanceBreakRepository.findByAttendanceRecordIdOrderByBreakStartAtAsc(record.getId()).stream()
+                .filter(b -> !b.getBreakStartAt().isBefore(sessionStart))
+                .mapToLong(b -> Duration.between(b.getBreakStartAt(), b.getBreakEndAt() != null ? b.getBreakEndAt() : now).toMinutes())
+                .sum();
+
+        long sessionMinutes = Duration.between(sessionStart, now).toMinutes();
+        int sessionWorkedMinutes = (int) Math.max(0, sessionMinutes - sessionBreakMinutes);
+        int totalWorkedMinutes = record.getBankedMinutes() + sessionWorkedMinutes;
+        record.setTotalWorkedMinutes(totalWorkedMinutes);
         record.setStatus(isLate(record.getClockInAt(), zone) ? AttendanceStatus.LATE : AttendanceStatus.ON_TIME);
         attendanceRecordRepository.save(record);
 
         if (record.getClientId() != null) {
-            logClientHoursForShift(record, workedMinutes);
+            logClientHoursForShift(record, sessionWorkedMinutes);
         }
 
         return toResponse(record, breaksFor(record.getId()));
@@ -177,19 +193,21 @@ public class AttendanceService {
                 .toList();
     }
 
-    /** Auto-logs the just-finished shift's hours against the client picked at clock-in —
-     * one client_logs row per shift, upserted in case clock-out is somehow called twice. */
-    private void logClientHoursForShift(AttendanceRecord record, int workedMinutes) {
+    /** Auto-logs this session's hours against the client picked at clock-in. Adds to
+     * (rather than overwrites) any existing same-day/same-client entry, since a re-clock-in
+     * after a checkout can produce a second session against the same client in one day. */
+    private void logClientHoursForShift(AttendanceRecord record, int sessionWorkedMinutes) {
         Client client = clientRepository.findById(record.getClientId()).orElse(null);
         if (client == null) {
             return;
         }
-        java.math.BigDecimal hours = java.math.BigDecimal.valueOf(workedMinutes)
+        java.math.BigDecimal sessionHours = java.math.BigDecimal.valueOf(sessionWorkedMinutes)
                 .divide(java.math.BigDecimal.valueOf(60), 2, java.math.RoundingMode.HALF_UP);
 
         ClientLog log = clientLogRepository
                 .findByUserIdAndWorkDateAndClientIdAndSource(record.getUserId(), record.getWorkDate(), client.getId(), "AUTO_CLOCKOUT")
                 .orElseGet(ClientLog::new);
+        java.math.BigDecimal hours = (log.getLoggedHours() != null ? log.getLoggedHours() : java.math.BigDecimal.ZERO).add(sessionHours);
         log.setOrganizationId(record.getOrganizationId());
         log.setUserId(record.getUserId());
         log.setWorkDate(record.getWorkDate());
