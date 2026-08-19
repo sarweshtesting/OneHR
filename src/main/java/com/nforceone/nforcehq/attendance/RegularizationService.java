@@ -1,5 +1,6 @@
 package com.nforceone.nforcehq.attendance;
 
+import com.nforceone.nforcehq.audit.AuditLogService;
 import com.nforceone.nforcehq.common.ApiException;
 import com.nforceone.nforcehq.common.ApprovalScope;
 import com.nforceone.nforcehq.notification.NotificationService;
@@ -30,6 +31,7 @@ public class RegularizationService {
     private final UserRepository userRepository;
     private final OrganizationRepository organizationRepository;
     private final NotificationService notificationService;
+    private final AuditLogService auditLogService;
 
     @Transactional
     public RegularizationView submit(JwtPrincipal principal, SubmitRegularizationRequest request) {
@@ -111,6 +113,9 @@ public class RegularizationService {
                 "Your attendance regularization for " + request.getWorkDate() + " was approved",
                 request.getId());
 
+        auditLogService.record(principal, "REGULARIZATION_APPROVED",
+                principal.name() + " approved " + resolveName(request.getUserId()) + "'s regularization for " + request.getWorkDate());
+
         return RegularizationView.from(request, resolveName(request.getUserId()));
     }
 
@@ -126,6 +131,9 @@ public class RegularizationService {
                 "Regularization request rejected",
                 "Your attendance regularization for " + request.getWorkDate() + " was rejected",
                 request.getId());
+
+        auditLogService.record(principal, "REGULARIZATION_REJECTED",
+                principal.name() + " rejected " + resolveName(request.getUserId()) + "'s regularization for " + request.getWorkDate());
 
         return RegularizationView.from(request, resolveName(request.getUserId()));
     }

@@ -1,5 +1,6 @@
 package com.nforceone.nforcehq.leave;
 
+import com.nforceone.nforcehq.audit.AuditLogService;
 import com.nforceone.nforcehq.common.ApiException;
 import com.nforceone.nforcehq.notification.NotificationService;
 import com.nforceone.nforcehq.security.JwtPrincipal;
@@ -28,6 +29,7 @@ public class LeaveService {
     private final LeaveRequestRepository leaveRequestRepository;
     private final UserRepository userRepository;
     private final NotificationService notificationService;
+    private final AuditLogService auditLogService;
 
     public List<LeaveTypeSummary> listTypes(JwtPrincipal principal) {
         UUID organizationId = requireOrganization(principal);
@@ -144,6 +146,9 @@ public class LeaveService {
                 "Your " + leaveType.getName() + " request for " + request.getDaysRequested() + " day(s) was approved",
                 request.getId());
 
+        auditLogService.record(principal, "LEAVE_APPROVED",
+                principal.name() + " approved " + resolveName(request.getUserId()) + "'s " + leaveType.getName() + " request");
+
         return new LeaveRequestView(request.getId(), resolveName(request.getUserId()), leaveType.getName(),
                 request.getStartDate(), request.getEndDate(), request.getDaysRequested(), request.getStatus().name());
     }
@@ -162,6 +167,9 @@ public class LeaveService {
                 "Leave request rejected",
                 "Your " + (leaveType != null ? leaveType.getName() : "leave") + " request was rejected",
                 request.getId());
+
+        auditLogService.record(principal, "LEAVE_REJECTED",
+                principal.name() + " rejected " + resolveName(request.getUserId()) + "'s " + (leaveType != null ? leaveType.getName() : "leave") + " request");
 
         return new LeaveRequestView(request.getId(), resolveName(request.getUserId()),
                 leaveType != null ? leaveType.getName() : "Leave",

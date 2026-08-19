@@ -359,3 +359,19 @@
 .legend-swatch.cal-compoff { background: #f1edfb; border-color: #b7a6ea; }
 .legend-swatch.cal-leave { background: #e7f1fc; border-color: #a9cbf0; }
 .legend-swatch.cal-weekend { background: #eef1f4; border-color: #ccd3da; }
+
+/* ---------- Admin ---------- */
+.admin-panel { margin-bottom: 16px; padding: 18px 20px; }
+.admin-inline-form { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.admin-inline-form .form-field { flex: 1; min-width: 220px; margin-bottom: 0; }
+.admin-inline-form .btn-mini { padding: 9px 16px; flex-shrink: 0; }
+.admin-saved-tick { font-size: 12px; font-weight: 600; color: var(--green); }
+.admin-dept-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.admin-scope-note { font-size: 12px; color: var(--ink-faint); margin-top: 12px; }
+
+/* ---------- Audit log ---------- */
+.audit-row { display: flex; gap: 14px; padding: 14px 18px; border-bottom: 1px solid var(--border); align-items: flex-start; }
+.audit-row:last-child { border-bottom: none; }
+.audit-row-body { flex: 1; min-width: 0; }
+.audit-row-body .desc { font-size: 13px; color: var(--ink); }
+.audit-row-body .meta { font-size: 11.5px; color: var(--ink-faint); margin-top: 3px; font-family: var(--font-mono); }

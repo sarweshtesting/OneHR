@@ -1,5 +1,6 @@
 package com.nforceone.nforcehq.people;
 
+import com.nforceone.nforcehq.audit.AuditLogService;
 import com.nforceone.nforcehq.common.ApiException;
 import com.nforceone.nforcehq.common.Roles;
 import com.nforceone.nforcehq.org.Department;
@@ -21,9 +22,12 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,9 +44,12 @@ public class PeopleController {
     private final UserRepository userRepository;
     private final DepartmentRepository departmentRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuditLogService auditLogService;
 
     @GetMapping
-    public List<PersonSummary> list(@AuthenticationPrincipal JwtPrincipal principal) {
+    public List<PersonSummary> list(
+            @AuthenticationPrincipal JwtPrincipal principal,
+            @RequestParam(defaultValue = "false") boolean includeInactive) {
         UUID organizationId = principal.effectiveOrganizationId();
         if (organizationId == null) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Select an organization first");
@@ -51,16 +58,17 @@ public class PeopleController {
                 .collect(java.util.stream.Collectors.toMap(Department::getId, Department::getName));
 
         boolean canSeeContactDetails = Roles.MANAGER_UP.contains(principal.role());
+        boolean canSeeInactive = includeInactive && Roles.CAN_MANAGE_PEOPLE.contains(principal.role());
 
         return userRepository.findByOrganizationId(organizationId).stream()
-                .filter(User::isActive)
+                .filter(u -> u.isActive() || canSeeInactive)
                 .map(u -> {
                     boolean revealContact = canSeeContactDetails || u.getId().equals(principal.userId());
                     return new PersonSummary(
                             u.getId(), u.getFullName(), revealContact ? u.getEmail() : null, revealContact ? u.getPhone() : null,
                             u.getRole().name(), u.getJobTitle(),
                             u.getDepartmentId() != null ? departmentNames.get(u.getDepartmentId()) : null,
-                            u.getAvatarInitials());
+                            u.getAvatarInitials(), u.isActive());
                 })
                 .sorted(java.util.Comparator.comparing(PersonSummary::fullName))
                 .toList();
@@ -113,7 +121,62 @@ public class PeopleController {
         user.setActive(true);
         userRepository.save(user);
 
+        auditLogService.record(principal, "PERSON_ADDED", principal.name() + " added " + user.getFullName() + " as " + requestedRole);
+
         return new AddPersonResponse(user.getId(), user.getFullName(), user.getEmail(), user.getRole().name(), temporaryPassword);
+    }
+
+    /**
+     * Same role-tier limits as addPerson: HR_ADMIN can only touch/assign EMPLOYEE or
+     * MANAGER, SUPER_ADMIN (and PLATFORM_ADMIN) additionally covers HR_ADMIN. Nobody can
+     * act on a SUPER_ADMIN or PLATFORM_ADMIN target through this endpoint, and nobody can
+     * change their own role or active status here — that's how you'd lock yourself out.
+     */
+    @PatchMapping("/{id}")
+    @PreAuthorize("hasAnyRole('HR_ADMIN','SUPER_ADMIN','PLATFORM_ADMIN')")
+    @Transactional
+    public PersonSummary updatePerson(
+            @AuthenticationPrincipal JwtPrincipal principal,
+            @PathVariable UUID id,
+            @RequestBody UpdatePersonRequest request) {
+        UUID organizationId = principal.effectiveOrganizationId();
+        if (organizationId == null) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Select an organization first");
+        }
+        if (id.equals(principal.userId())) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "You can't change your own role or status here");
+        }
+
+        User target = userRepository.findById(id)
+                .filter(u -> organizationId.equals(u.getOrganizationId()))
+                .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Person not found"));
+
+        Set<String> allowedRoles = "HR_ADMIN".equals(principal.role()) ? HR_ADMIN_CREATABLE_ROLES : SUPER_ADMIN_CREATABLE_ROLES;
+        if (!allowedRoles.contains(target.getRole().name())) {
+            throw new ApiException(HttpStatus.FORBIDDEN, "You can't manage someone with that role");
+        }
+
+        StringBuilder change = new StringBuilder();
+        if (request.role() != null) {
+            String newRole = request.role().trim().toUpperCase();
+            if (!allowedRoles.contains(newRole)) {
+                throw new ApiException(HttpStatus.FORBIDDEN, "You can't assign the role " + newRole);
+            }
+            target.setRole(Role.valueOf(newRole));
+            change.append("role -> ").append(newRole);
+        }
+        if (request.active() != null) {
+            target.setActive(request.active());
+            if (!change.isEmpty()) change.append(", ");
+            change.append(request.active() ? "reactivated" : "deactivated");
+        }
+        userRepository.save(target);
+
+        auditLogService.record(principal, request.active() != null && !request.active() ? "PERSON_DEACTIVATED" : "PERSON_UPDATED",
+                principal.name() + " updated " + target.getFullName() + " (" + change + ")");
+
+        return new PersonSummary(target.getId(), target.getFullName(), target.getEmail(), target.getPhone(),
+                target.getRole().name(), target.getJobTitle(), null, target.getAvatarInitials(), target.isActive());
     }
 
     private static String generateTemporaryPassword() {

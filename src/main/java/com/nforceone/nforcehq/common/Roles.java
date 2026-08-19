@@ -14,6 +14,9 @@ public final class Roles {
     /** Finance module (including chat) — leadership and HR, not plain employees. */
     public static final Set<String> FINANCE = Set.of("MANAGER", "HR_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN");
 
+    /** Can create/invite/manage people and org structure — HR and the org's top admin tier. */
+    public static final Set<String> CAN_MANAGE_PEOPLE = Set.of("HR_ADMIN", "SUPER_ADMIN", "PLATFORM_ADMIN");
+
     private Roles() {
     }
 }

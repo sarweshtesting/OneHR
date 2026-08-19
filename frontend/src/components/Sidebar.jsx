@@ -73,7 +73,7 @@ function NavGroup({ label, icon, children }) {
 }
 
 export default function Sidebar() {
-  const { user, canAccessFinance } = useAuth();
+  const { user, canAccessFinance, canManagePeople } = useAuth();
   const { theme, setTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('nexora_sidebar_collapsed') === '1');
 
@@ -122,8 +122,12 @@ export default function Sidebar() {
         </NavGroup>
 
         <NavGroup label="Governance" icon={<IconAdmin />}>
-          <InertNavItem icon={<IconAdmin />}>Admin</InertNavItem>
-          <InertNavItem icon={<IconAuditLog />}>Audit Log</InertNavItem>
+          {canManagePeople
+            ? <NavItem to="/admin" icon={<IconAdmin />}>Admin</NavItem>
+            : <InertNavItem icon={<IconAdmin />}>Admin</InertNavItem>}
+          {canManagePeople
+            ? <NavItem to="/audit-log" icon={<IconAuditLog />}>Audit Log</NavItem>
+            : <InertNavItem icon={<IconAuditLog />}>Audit Log</InertNavItem>}
         </NavGroup>
       </div>
 

@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import RequireFinanceAccess from './components/RequireFinanceAccess';
+import RequireManagePeopleAccess from './components/RequireManagePeopleAccess';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -19,6 +20,8 @@ import PeoplePage from './pages/PeoplePage';
 import FinanceChatPage from './pages/FinanceChatPage';
 import PayslipsPage from './pages/PayslipsPage';
 import ClientTrackingPage from './pages/ClientTrackingPage';
+import AdminPage from './pages/AdminPage';
+import AuditLogPage from './pages/AuditLogPage';
 
 export default function App() {
   return (
@@ -41,6 +44,10 @@ export default function App() {
           <Route path="/client-tracking" element={<ClientTrackingPage />} />
           <Route element={<RequireFinanceAccess />}>
             <Route path="/finance" element={<FinanceChatPage />} />
+          </Route>
+          <Route element={<RequireManagePeopleAccess />}>
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/audit-log" element={<AuditLogPage />} />
           </Route>
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/help" element={<HelpPage />} />
