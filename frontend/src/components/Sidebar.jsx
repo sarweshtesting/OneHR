@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -36,32 +36,20 @@ function InertNavItem({ icon, children }) {
 }
 
 /**
- * Collapsed by default; reveals its children on hover *or* click (click pins it open
- * so touch/keyboard users aren't stuck with a hover-only affordance). When the whole
- * sidebar is collapsed to its icon rail, children render as a flyout instead of an
- * inline accordion.
+ * Collapsed by default; reveals its children only on click (no hover-to-open —
+ * hovering was too easy to trigger by accident while scrolling/moving the mouse
+ * past the sidebar). When the whole sidebar is collapsed to its icon rail, children
+ * render as a flyout instead of an inline accordion.
  */
 function NavGroup({ label, icon, children }) {
   const [open, setOpen] = useState(false);
-  const pinnedRef = useRef(false);
-  const closeTimer = useRef(null);
 
-  function openGroup() {
-    clearTimeout(closeTimer.current);
-    setOpen(true);
-  }
-  function scheduleClose() {
-    closeTimer.current = setTimeout(() => {
-      if (!pinnedRef.current) setOpen(false);
-    }, 220);
-  }
   function toggleClick() {
-    pinnedRef.current = !pinnedRef.current;
-    setOpen(pinnedRef.current);
+    setOpen((prev) => !prev);
   }
 
   return (
-    <div className={'nav-group' + (open ? ' open' : '')} onMouseEnter={openGroup} onMouseLeave={scheduleClose}>
+    <div className={'nav-group' + (open ? ' open' : '')}>
       <button type="button" className="nav-group-head" onClick={toggleClick} aria-expanded={open}>
         {icon}
         <span className="label">{label}</span>
