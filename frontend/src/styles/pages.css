@@ -42,7 +42,7 @@
 .team-meta .role { font-size: 11.5px; color: var(--ink-faint); overflow-wrap: break-word; line-height: 1.4; }
 
 .team-roster-toolbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px 18px; }
-.team-roster-scroll { max-height: 292px; overflow: auto; }
+.team-roster-scroll { max-height: 255px; overflow: auto; }
 .team-mini-scroll { max-height: 220px; overflow: auto; }
 .seg-control.gapped { gap: 6px; background: transparent; border: none; padding: 0; }
 .seg-control.gapped .seg-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
@@ -98,8 +98,9 @@
 .todo-tag { font-size: 10.5px; font-family: var(--font-mono); color: var(--ink-faint); background: var(--surface-alt); border: 1px solid var(--border); padding: 2px 7px; border-radius: 20px; flex-shrink: 0; }
 
 /* ---------- My Team ---------- */
-.page-head-text { display: flex; flex-direction: column; gap: 5px; max-width: 680px; }
-.page-desc { color: var(--ink-faint); font-size: 12.5px; line-height: 1.5; text-align: left; }
+.page-head-text { display: flex; flex-direction: column; gap: 5px; max-width: 960px; flex: 1; min-width: 0; }
+.page-desc { color: var(--ink-faint); font-size: 12.5px; line-height: 1.5; text-align: left; white-space: nowrap; }
+@media (max-width: 1300px) { .page-desc { white-space: normal; } }
 
 /* ---------- Smooth, polished dual-axis scrollbars (reusable utility) ---------- */
 .scroll-polished { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
@@ -124,7 +125,7 @@
 .team-cal-nav { display: flex; align-items: center; gap: 6px; }
 .team-cal-month { font-size: 12.5px; font-weight: 600; color: var(--ink); min-width: 108px; text-align: center; font-family: var(--font-mono); }
 
-.team-cal-scroll { overflow: auto; padding: 6px 18px 14px 18px; max-height: 268px; }
+.team-cal-scroll { overflow: auto; padding: 6px 18px 14px 18px; max-height: 230px; }
 .team-cal-scroll.tall { max-height: none; flex: 1; min-height: 0; }
 .team-cal-table { border-collapse: separate; border-spacing: 0; }
 .team-cal-table.week-mode { table-layout: fixed; width: 100%; }

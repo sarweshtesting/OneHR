@@ -436,7 +436,7 @@ export default function MyTeamPage() {
         <div className="page-head-text">
           <h1>My Team</h1>
           <div className="page-desc">
-            Attendance, leave, and open requests for your direct reports, all in one place.
+            Attendance, leave, and open requests for your direct reports, all in one place, so you don&apos;t have to check four separate pages.
           </div>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
