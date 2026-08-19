@@ -29,7 +29,8 @@
 .sidebar-toggle:hover { background: rgba(255,255,255,0.08); color: var(--on-black); }
 .sidebar.collapsed .sidebar-toggle { margin-left: 0; }
 
-.nav-scroll { flex: 1; overflow-y: auto; min-height: 0; }
+.nav-scroll { flex: 1; overflow-y: auto; min-height: 0; scrollbar-width: none; }
+.nav-scroll::-webkit-scrollbar { width: 0; height: 0; }
 .sidebar.collapsed .nav-scroll { overflow: visible; }
 
 .nav-group-label { font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--on-black-faint); font-weight: 600; padding: 14px 12px 6px 12px; }
@@ -82,14 +83,12 @@
 .sidebar.collapsed .role-pill { display: none; }
 .sidebar.collapsed .sidebar-footer > div { justify-content: center; }
 
-.theme-switch { display: flex; gap: 3px; background: rgba(255,255,255,0.06); border-radius: 8px; padding: 3px; margin-top: 10px; }
-.theme-switch-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 5px; padding: 6px 0; border-radius: 6px; color: var(--on-black-faint); font-size: 11px; font-weight: 600; }
-.theme-switch-btn svg { width: 13px; height: 13px; }
-.theme-switch-btn:hover { color: var(--on-black); }
-.theme-switch-btn.active { background: var(--red); color: var(--white); }
-.sidebar.collapsed .theme-switch { flex-direction: column; background: none; padding: 0; gap: 4px; }
-.sidebar.collapsed .theme-switch-btn { padding: 6px 0; }
-.sidebar.collapsed .theme-switch-btn .label { display: none; }
+/* ---------- Theme toggle (icon-only, lives in the profile dropdown) ---------- */
+.header-dropdown-theme { display: flex; gap: 3px; background: var(--surface-alt); border-radius: 8px; padding: 3px; margin: 10px 16px 4px 16px; }
+.header-dropdown-theme-btn { flex: 1; display: flex; align-items: center; justify-content: center; padding: 7px 0; border-radius: 6px; color: var(--ink-faint); }
+.header-dropdown-theme-btn svg { width: 15px; height: 15px; }
+.header-dropdown-theme-btn:hover { color: var(--ink); }
+.header-dropdown-theme-btn.active { background: var(--red); color: var(--white); }
 
 /* ---------- Main ---------- */
 .main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
