@@ -7,6 +7,7 @@ import com.nforceone.nforcehq.user.User;
 import com.nforceone.nforcehq.user.UserRepository;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrgHierarchyController {
 
     private final UserRepository userRepository;
+    private final DepartmentRepository departmentRepository;
 
     @GetMapping
     public List<OrgHierarchyNode> hierarchy(@AuthenticationPrincipal JwtPrincipal principal) {
@@ -37,9 +39,11 @@ public class OrgHierarchyController {
         List<User> all = userRepository.findByOrganizationId(organizationId).stream()
                 .filter(User::isActive)
                 .toList();
+        Map<UUID, String> departmentNames = departmentRepository.findByOrganizationId(organizationId).stream()
+                .collect(java.util.stream.Collectors.toMap(Department::getId, Department::getName));
 
         if (Roles.MANAGER_UP.contains(principal.role())) {
-            return all.stream().map(this::toNode).toList();
+            return all.stream().map(u -> toNode(u, departmentNames)).toList();
         }
 
         Set<UUID> visible = new HashSet<>();
@@ -51,10 +55,11 @@ public class OrgHierarchyController {
         }
         all.stream().filter(u -> principal.userId().equals(u.getManagerId())).forEach(u -> visible.add(u.getId()));
 
-        return all.stream().filter(u -> visible.contains(u.getId())).map(this::toNode).toList();
+        return all.stream().filter(u -> visible.contains(u.getId())).map(u -> toNode(u, departmentNames)).toList();
     }
 
-    private OrgHierarchyNode toNode(User u) {
-        return new OrgHierarchyNode(u.getId(), u.getFullName(), u.getJobTitle(), u.getRole().name(), u.getAvatarInitials(), u.getManagerId());
+    private OrgHierarchyNode toNode(User u, Map<UUID, String> departmentNames) {
+        return new OrgHierarchyNode(u.getId(), u.getFullName(), u.getJobTitle(), u.getRole().name(), u.getAvatarInitials(), u.getManagerId(),
+                u.getDepartmentId(), u.getDepartmentId() != null ? departmentNames.get(u.getDepartmentId()) : null);
     }
 }
