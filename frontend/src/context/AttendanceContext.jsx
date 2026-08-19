@@ -1,10 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '../api/client';
-import { useAuth } from './AuthContext';
 import ClockInModal from '../components/ClockInModal';
 
 const AttendanceContext = createContext(null);
-const CLOCK_IN_DIALOG_ROLES = new Set(['EMPLOYEE', 'MANAGER']);
 
 /**
  * Shared clock-in state so the Topbar's quick clock control and the Overview page's
@@ -12,7 +10,6 @@ const CLOCK_IN_DIALOG_ROLES = new Set(['EMPLOYEE', 'MANAGER']);
  * so clocking in from one would leave the other showing stale state until its next fetch.
  */
 export function AttendanceProvider({ children }) {
-  const { user } = useAuth();
   const [attendance, setAttendance] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -40,16 +37,12 @@ export function AttendanceProvider({ children }) {
     setAttendance(data);
   }, []);
 
-  /** Employees/Managers pick mode + optional client via a dialog first; every other
-   * role keeps the original one-click Office clock-in. Returns a promise either way,
-   * so callers can await it and catch a failed clock-in the same way as before. */
+  /** Every role picks mode + optional client via a dialog before clocking in. Returns
+   * a promise so callers can await/catch it the same way as a direct clockIn() call. */
   const requestClockIn = useCallback(() => {
-    if (user && CLOCK_IN_DIALOG_ROLES.has(user.role)) {
-      setModalOpen(true);
-      return Promise.resolve();
-    }
-    return clockIn('OFFICE');
-  }, [user, clockIn]);
+    setModalOpen(true);
+    return Promise.resolve();
+  }, []);
 
   const value = useMemo(() => ({ attendance, loading, reload, clockIn, clockOut, requestClockIn }),
     [attendance, loading, reload, clockIn, clockOut, requestClockIn]);

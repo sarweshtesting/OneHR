@@ -7,6 +7,13 @@
   padding: 22px 14px;
   position: sticky; top: 0; height: 100vh;
   transition: width .18s ease;
+  /* Without an explicit z-index here, .sidebar's own stacking context (created by
+     position: sticky) paints behind .main's (e.g. the Overview hero card, which has
+     position: relative) simply because .main comes later in the DOM — z-index on the
+     collapsed nav-group flyout can't fix that since it only wins comparisons *within*
+     a shared stacking context. Bumping the whole sidebar above ordinary page content
+     (but below dropdowns/modals) lets the flyout actually overlay the page. */
+  z-index: 50;
 }
 .sidebar.collapsed { width: 76px; }
 .brand { display: flex; align-items: center; gap: 10px; padding: 0 8px 24px 8px; }
