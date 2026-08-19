@@ -36,6 +36,9 @@ public class AttendanceRecord extends TenantAwareEntity {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     private AttendanceMode mode;
 
+    @Column(name = "client_id")
+    private UUID clientId;
+
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(nullable = false)

@@ -26,7 +26,7 @@ export default function OverviewPage() {
   const { user, isManager } = useAuth();
   const navigate = useNavigate();
   const { timeString } = useClock();
-  const { attendance, clockIn, clockOut } = useAttendance();
+  const { attendance, loading: attendanceLoading, requestClockIn, clockOut } = useAttendance();
   const elapsedMinutes = useElapsedMinutes(attendance && !attendance.clockOutAt ? attendance.clockInAt : null);
   const [announceOpen, setAnnounceOpen] = useState(true);
   const [regularizeOpen, setRegularizeOpen] = useState(false);
@@ -39,7 +39,7 @@ export default function OverviewPage() {
   async function handleClockToggle() {
     try {
       if (!attendance || !attendance.clockInAt || attendance.clockOutAt) {
-        await clockIn('OFFICE');
+        await requestClockIn();
       } else {
         await clockOut();
       }
@@ -103,7 +103,7 @@ export default function OverviewPage() {
               <div className="elapsed" style={{ color: timeColor() }}>{elapsedText()}</div>
               <button
                 className={'clock-btn' + (notClockedInOrDone ? ' out' : attendance?.onBreak ? ' on-break' : '')}
-                disabled={shiftComplete}
+                disabled={shiftComplete || attendanceLoading}
                 onClick={handleClockToggle}
               >
                 {notClockedInOrDone ? <IconClockIn /> : <IconClockOut />}

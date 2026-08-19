@@ -27,6 +27,8 @@ public class AttendanceService {
     private final AttendanceRecordRepository attendanceRecordRepository;
     private final AttendanceBreakRepository attendanceBreakRepository;
     private final OrganizationRepository organizationRepository;
+    private final ClientRepository clientRepository;
+    private final ClientLogRepository clientLogRepository;
 
     @Transactional
     public AttendanceTodayResponse clockIn(JwtPrincipal principal, ClockInRequest request) {
@@ -51,6 +53,14 @@ public class AttendanceService {
         record.setMode(request != null && request.mode() != null ? request.mode() : AttendanceMode.OFFICE);
         record.setStatus(AttendanceStatus.IN_PROGRESS);
         record.setSource(AttendanceSource.WEB_CLOCK);
+
+        if (request != null && request.clientId() != null) {
+            Client client = clientRepository.findById(request.clientId())
+                    .filter(c -> c.getOrganizationId().equals(organizationId))
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Unknown client"));
+            record.setClientId(client.getId());
+        }
+
         attendanceRecordRepository.save(record);
 
         return toResponse(record, List.of());
@@ -71,6 +81,10 @@ public class AttendanceService {
         record.setTotalWorkedMinutes(workedMinutes);
         record.setStatus(isLate(record.getClockInAt(), zone) ? AttendanceStatus.LATE : AttendanceStatus.ON_TIME);
         attendanceRecordRepository.save(record);
+
+        if (record.getClientId() != null) {
+            logClientHoursForShift(record, workedMinutes);
+        }
 
         return toResponse(record, breaksFor(record.getId()));
     }
@@ -163,8 +177,34 @@ public class AttendanceService {
                 .toList();
     }
 
+    /** Auto-logs the just-finished shift's hours against the client picked at clock-in —
+     * one client_logs row per shift, upserted in case clock-out is somehow called twice. */
+    private void logClientHoursForShift(AttendanceRecord record, int workedMinutes) {
+        Client client = clientRepository.findById(record.getClientId()).orElse(null);
+        if (client == null) {
+            return;
+        }
+        java.math.BigDecimal hours = java.math.BigDecimal.valueOf(workedMinutes)
+                .divide(java.math.BigDecimal.valueOf(60), 2, java.math.RoundingMode.HALF_UP);
+
+        ClientLog log = clientLogRepository
+                .findByUserIdAndWorkDateAndClientIdAndSource(record.getUserId(), record.getWorkDate(), client.getId(), "AUTO_CLOCKOUT")
+                .orElseGet(ClientLog::new);
+        log.setOrganizationId(record.getOrganizationId());
+        log.setUserId(record.getUserId());
+        log.setWorkDate(record.getWorkDate());
+        log.setClientId(client.getId());
+        log.setClientName(client.getName());
+        log.setLoggedHours(hours);
+        log.setSource("AUTO_CLOCKOUT");
+        clientLogRepository.save(log);
+    }
+
     private AttendanceTodayResponse toResponse(AttendanceRecord record, List<BreakSegment> breaks) {
         boolean onBreak = breaks.stream().anyMatch(b -> b.endAt() == null);
+        String clientName = record.getClientId() != null
+                ? clientRepository.findById(record.getClientId()).map(Client::getName).orElse(null)
+                : null;
         return new AttendanceTodayResponse(
                 record.getId(),
                 record.getWorkDate(),
@@ -175,6 +215,8 @@ public class AttendanceService {
                 record.getTotalBreakMinutes(),
                 record.getTotalWorkedMinutes(),
                 onBreak,
-                breaks);
+                breaks,
+                record.getClientId(),
+                clientName);
     }
 }

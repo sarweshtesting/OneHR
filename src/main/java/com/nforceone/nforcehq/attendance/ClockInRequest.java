@@ -1,4 +1,6 @@
 package com.nforceone.nforcehq.attendance;
 
-public record ClockInRequest(AttendanceMode mode) {
+import java.util.UUID;
+
+public record ClockInRequest(AttendanceMode mode, UUID clientId) {
 }

@@ -46,6 +46,33 @@ export default function AttendancePage() {
     }
   }
 
+  async function downloadReport(path, filename) {
+    try {
+      const blob = await apiFetchBlob(path);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  function downloadMonthlyReport() {
+    downloadReport(`/api/reports/monthly?month=${month}`, `monthly-report-${month}.csv`);
+  }
+
+  function downloadWeeklyTimesheet() {
+    const today = new Date();
+    const day = today.getDay();
+    const mondayOffset = day === 0 ? -6 : 1 - day;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + mondayOffset);
+    const weekStart = monday.toISOString().slice(0, 10);
+    downloadReport(`/api/reports/weekly-timesheet?weekStart=${weekStart}`, `weekly-timesheet-${weekStart}.csv`);
+  }
+
   return (
     <section>
       <div className="page-head">
@@ -54,6 +81,17 @@ export default function AttendancePage() {
           <h1>Attendance</h1>
         </div>
         <div className="date">{MONTH_NAMES[new Date().getMonth()]} {new Date().getFullYear()}</div>
+      </div>
+
+      <div className="panel" style={{ padding: '14px 18px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+        <div>
+          <div style={{ fontWeight: 700, fontSize: 13.5 }}>My reports</div>
+          <div style={{ fontSize: 12, color: 'var(--ink-faint)' }}>Your own attendance and client hours, ready to download</div>
+        </div>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" className="btn-mini" onClick={downloadWeeklyTimesheet}>Weekly timesheet (CSV)</button>
+          <button type="button" className="btn-mini" onClick={downloadMonthlyReport}>Monthly report (CSV)</button>
+        </div>
       </div>
 
       <div className="attendance-toolbar">

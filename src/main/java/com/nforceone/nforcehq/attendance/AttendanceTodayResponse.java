@@ -15,9 +15,11 @@ public record AttendanceTodayResponse(
         int totalBreakMinutes,
         Integer totalWorkedMinutes,
         boolean onBreak,
-        List<BreakSegment> breaks) {
+        List<BreakSegment> breaks,
+        UUID clientId,
+        String clientName) {
 
     static AttendanceTodayResponse empty() {
-        return new AttendanceTodayResponse(null, null, null, null, null, null, 0, null, false, List.of());
+        return new AttendanceTodayResponse(null, null, null, null, null, null, 0, null, false, List.of(), null, null);
     }
 }

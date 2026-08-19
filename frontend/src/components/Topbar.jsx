@@ -9,7 +9,7 @@ import GlobalSearch from './GlobalSearch';
 export default function Topbar() {
   const { user, organizations, selectedOrgId, selectOrg } = useAuth();
   const { timeString } = useClock();
-  const { attendance, clockIn, clockOut } = useAttendance();
+  const { attendance, loading: attendanceLoading, requestClockIn, clockOut } = useAttendance();
 
   const isPlatformAdmin = user?.role === 'PLATFORM_ADMIN';
   const currentOrgName = isPlatformAdmin
@@ -35,7 +35,7 @@ export default function Topbar() {
   async function handleClockToggle() {
     try {
       if (!attendance || !attendance.clockInAt || attendance.clockOutAt) {
-        await clockIn('OFFICE');
+        await requestClockIn();
       } else {
         await clockOut();
       }
@@ -66,7 +66,7 @@ export default function Topbar() {
         <button
           className={'topbar-clock-btn' + (shiftComplete ? ' done' : clockedIn ? (attendance?.onBreak ? ' on-break' : ' on') : '')}
           onClick={handleClockToggle}
-          disabled={shiftComplete}
+          disabled={shiftComplete || attendanceLoading}
           title={shiftComplete ? 'Shift complete' : clockLabel}
         >
           {shiftComplete ? <IconCheck /> : <span className="topbar-clock-dot" />}
