@@ -4,6 +4,7 @@ import com.nforceone.nforcehq.attendance.AttendanceBreakRepository;
 import com.nforceone.nforcehq.attendance.AttendanceMode;
 import com.nforceone.nforcehq.attendance.AttendanceRecord;
 import com.nforceone.nforcehq.attendance.AttendanceRecordRepository;
+import com.nforceone.nforcehq.dashboard.ApprovalItem;
 import com.nforceone.nforcehq.leave.LeaveRequestRepository;
 import com.nforceone.nforcehq.leave.LeaveRequestStatus;
 import com.nforceone.nforcehq.security.JwtPrincipal;
@@ -16,9 +17,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -32,6 +35,7 @@ public class TeamController {
     private final AttendanceRecordRepository attendanceRecordRepository;
     private final AttendanceBreakRepository attendanceBreakRepository;
     private final LeaveRequestRepository leaveRequestRepository;
+    private final TeamService teamService;
 
     @GetMapping("/today-status")
     public List<TeamMemberStatus> todayStatus(@AuthenticationPrincipal JwtPrincipal principal) {
@@ -85,5 +89,35 @@ public class TeamController {
             return new TeamMemberStatus(user.getId(), user.getFullName(), user.getJobTitle(),
                     user.getAvatarInitials(), status, clockInTime);
         }).toList();
+    }
+
+    @GetMapping("/stats")
+    @PreAuthorize("hasAnyRole('MANAGER','HR_ADMIN','SUPER_ADMIN','PLATFORM_ADMIN')")
+    public TeamStats stats(@AuthenticationPrincipal JwtPrincipal principal) {
+        return teamService.stats(principal);
+    }
+
+    @GetMapping("/attention")
+    @PreAuthorize("hasAnyRole('MANAGER','HR_ADMIN','SUPER_ADMIN','PLATFORM_ADMIN')")
+    public List<ApprovalItem> attention(@AuthenticationPrincipal JwtPrincipal principal) {
+        return teamService.attention(principal);
+    }
+
+    @GetMapping("/calendar")
+    @PreAuthorize("hasAnyRole('MANAGER','HR_ADMIN','SUPER_ADMIN','PLATFORM_ADMIN')")
+    public List<TeamCalendarRow> calendar(@AuthenticationPrincipal JwtPrincipal principal, @RequestParam(required = false) String month) {
+        return teamService.calendar(principal, month);
+    }
+
+    @GetMapping("/punctuality")
+    @PreAuthorize("hasAnyRole('MANAGER','HR_ADMIN','SUPER_ADMIN','PLATFORM_ADMIN')")
+    public TeamPunctualityResponse punctuality(
+            @AuthenticationPrincipal JwtPrincipal principal,
+            @RequestParam(required = false) String start,
+            @RequestParam(required = false) String end) {
+        LocalDate today = LocalDate.now();
+        LocalDate rangeEnd = end != null ? LocalDate.parse(end) : today;
+        LocalDate rangeStart = start != null ? LocalDate.parse(start) : rangeEnd.minusDays(6);
+        return teamService.punctuality(principal, rangeStart, rangeEnd);
     }
 }

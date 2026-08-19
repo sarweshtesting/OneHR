@@ -32,6 +32,11 @@ public class MismatchService {
     public List<MismatchView> openMismatches(JwtPrincipal principal) {
         UUID organizationId = requireOrganization(principal);
         List<UUID> userIds = ApprovalScope.resolve(principal, userRepository, organizationId);
+        return openMismatchesFor(organizationId, userIds);
+    }
+
+    @Transactional(readOnly = true)
+    public List<MismatchView> openMismatchesFor(UUID organizationId, List<UUID> userIds) {
         if (userIds.isEmpty()) {
             return List.of();
         }

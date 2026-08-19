@@ -11,6 +11,9 @@
 .my-reports-row:first-of-type { border-top: none; padding-top: 0; }
 
 .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
+.stats-row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.stats-row.cols-6 { grid-template-columns: repeat(6, 1fr); }
+@media (max-width: 1200px) { .stats-row.cols-6 { grid-template-columns: repeat(3, 1fr); } }
 .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
 .stat-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
 .stat-label { font-size: 12px; color: var(--ink-soft); font-weight: 600; }

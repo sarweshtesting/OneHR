@@ -88,6 +88,50 @@
 .todo-text b { font-weight: 600; }
 .todo-tag { font-size: 10.5px; font-family: var(--font-mono); color: var(--ink-faint); background: var(--surface-alt); border: 1px solid var(--border); padding: 2px 7px; border-radius: 20px; flex-shrink: 0; }
 
+/* ---------- My Team ---------- */
+.page-head-text { display: flex; flex-direction: column; gap: 5px; max-width: 640px; }
+.page-desc { color: var(--ink-faint); font-size: 12.5px; line-height: 1.5; }
+
+.team-search-input {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 8px 12px; font-size: 12.5px; color: var(--ink); flex: 1; min-width: 180px;
+}
+
+.team-cal-scroll { overflow-x: auto; padding: 14px 18px; }
+.team-cal-table { border-collapse: separate; border-spacing: 0 6px; width: 100%; }
+.team-cal-table th { font-size: 10px; font-weight: 600; color: var(--ink-faint); font-family: var(--font-mono); padding: 0 3px 4px 3px; min-width: 24px; }
+.team-cal-name { text-align: left; white-space: nowrap; padding-right: 16px; }
+.team-cal-name-inner { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; }
+.team-cal-name .avatar-circle { width: 24px; height: 24px; font-size: 10px; }
+.tc-day { width: 23px; height: 23px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-family: var(--font-mono); color: var(--ink-faint); margin: 0 auto; }
+.tc-day.holiday { background: var(--green-soft); color: var(--green-dark); font-weight: 700; }
+.tc-day.weekly-off { background: var(--surface-sunken); color: var(--ink-soft); }
+.tc-day.on-leave { background: var(--red-soft); color: var(--red-dark); font-weight: 700; }
+.tc-day.wfh { border: 1.5px solid var(--ink-soft); color: var(--ink); }
+.tc-day.missing { background: var(--red); color: var(--white); font-weight: 700; }
+.tc-day.today { outline: 2px solid var(--ink); outline-offset: 1px; }
+.team-cal-legend { display: flex; gap: 16px; flex-wrap: wrap; font-size: 11.5px; color: var(--ink-faint); padding: 0 18px 16px 18px; }
+.team-cal-legend-item { display: flex; align-items: center; gap: 6px; }
+.team-cal-legend-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.team-cal-legend-dot.holiday { background: var(--green-soft); border: 1px solid var(--green-dark); }
+.team-cal-legend-dot.weekly-off { background: var(--surface-sunken); border: 1px solid var(--border-strong); }
+.team-cal-legend-dot.on-leave { background: var(--red-soft); border: 1px solid var(--red-dark); }
+.team-cal-legend-dot.wfh { background: transparent; border: 1.5px solid var(--ink-soft); }
+.team-cal-legend-dot.missing { background: var(--red); }
+
+.team-lb-row { display: flex; align-items: center; gap: 14px; padding: 12px 18px; border-bottom: 1px solid var(--border); }
+.team-lb-row:last-child { border-bottom: none; }
+.team-lb-meta { width: 170px; flex-shrink: 0; min-width: 0; }
+.team-lb-meta .name { font-weight: 600; font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.team-lb-meta .title { font-size: 11.5px; color: var(--ink-faint); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.team-lb-bar-wrap { flex: 1; }
+.team-lb-stat { width: 160px; text-align: right; font-size: 12px; color: var(--ink-soft); flex-shrink: 0; font-family: var(--font-mono); }
+
+.team-daily-chart { display: flex; align-items: flex-end; gap: 12px; height: 90px; padding: 16px 18px 10px 18px; border-top: 1px solid var(--border); }
+.team-daily-bar-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; flex: 1; height: 100%; }
+.team-daily-bar { width: 12px; background: var(--red); border-radius: 3px 3px 0 0; min-height: 3px; }
+.team-daily-bar-label { font-size: 9.5px; color: var(--ink-faint); font-family: var(--font-mono); white-space: nowrap; }
+
 /* ---------- Attendance ---------- */
 .attendance-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }
 .seg-control { display: flex; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 3px; }

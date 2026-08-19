@@ -62,6 +62,11 @@ public class RegularizationService {
     public List<RegularizationView> pending(JwtPrincipal principal) {
         UUID organizationId = requireOrganization(principal);
         List<UUID> userIds = ApprovalScope.resolve(principal, userRepository, organizationId);
+        return pendingFor(organizationId, userIds);
+    }
+
+    @Transactional(readOnly = true)
+    public List<RegularizationView> pendingFor(UUID organizationId, List<UUID> userIds) {
         if (userIds.isEmpty()) {
             return List.of();
         }

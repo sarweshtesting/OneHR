@@ -24,6 +24,7 @@ import ClientTrackingPage from './pages/ClientTrackingPage';
 import AdminPage from './pages/AdminPage';
 import AuditLogPage from './pages/AuditLogPage';
 import ExceptionDashboardPage from './pages/ExceptionDashboardPage';
+import MyTeamPage from './pages/MyTeamPage';
 import ServiceRequestsPage from './pages/ServiceRequestsPage';
 
 export default function App() {
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="/payslips" element={<PayslipsPage />} />
           <Route path="/client-tracking" element={<ClientTrackingPage />} />
           <Route element={<RequireManagerAccess />}>
+            <Route path="/my-team" element={<MyTeamPage />} />
             <Route path="/exceptions" element={<ExceptionDashboardPage />} />
           </Route>
           <Route path="/service-requests" element={<ServiceRequestsPage />} />

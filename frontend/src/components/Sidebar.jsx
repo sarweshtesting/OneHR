@@ -6,7 +6,7 @@ import {
   IconGrid, IconClock, IconCalendar, IconOrgChart, IconPeople,
   IconPayroll, IconClientTracking, IconAdmin, IconAuditLog, IconChat,
   IconCalendarDays, IconStar, IconChevronDown, IconPanelToggle,
-  IconWarningTriangle, IconHelp,
+  IconWarningTriangle, IconHelp, IconTeamDirectory,
 } from './icons';
 
 function NavItem({ to, icon, children, badge }) {
@@ -79,6 +79,9 @@ export default function Sidebar() {
         <NavItem to="/overview" icon={<IconGrid />}>Overview</NavItem>
 
         <NavGroup label="Organization" icon={<IconPeople />}>
+          {isManager
+            ? <NavItem to="/my-team" icon={<IconTeamDirectory />}>My Team</NavItem>
+            : <InertNavItem icon={<IconTeamDirectory />}>My Team</InertNavItem>}
           <NavItem to="/people" icon={<IconPeople />}>People</NavItem>
           <NavItem to="/org-hierarchy" icon={<IconOrgChart />}>Organisation</NavItem>
         </NavGroup>

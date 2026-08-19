@@ -105,6 +105,11 @@ public class LeaveService {
     public List<LeaveRequestView> pending(JwtPrincipal principal) {
         UUID organizationId = requireOrganization(principal);
         List<UUID> userIds = com.nforceone.nforcehq.common.ApprovalScope.resolve(principal, userRepository, organizationId);
+        return pendingFor(organizationId, userIds);
+    }
+
+    @Transactional(readOnly = true)
+    public List<LeaveRequestView> pendingFor(UUID organizationId, List<UUID> userIds) {
         if (userIds.isEmpty()) {
             return List.of();
         }
