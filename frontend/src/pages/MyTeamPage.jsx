@@ -57,11 +57,11 @@ function TeamMiniList({ items, empty }) {
   ));
 }
 
-function CalendarGrid({ days, rows, todayNum, tall }) {
+function CalendarGrid({ days, rows, todayNum, tall, mode }) {
   return (
     <>
       <div className={'team-cal-scroll scroll-polished' + (tall ? ' tall' : '')}>
-        <table className="team-cal-table">
+        <table className={'team-cal-table ' + (mode === 'month' ? 'month-mode' : 'week-mode')}>
           <thead>
             <tr>
               <th className="team-cal-name"></th>
@@ -191,7 +191,9 @@ function TeamCalendar() {
     <>
       {loading && <div className="panel-empty">Loading…</div>}
       {!loading && !calendar?.length && <div className="panel-empty">No direct reports to show</div>}
-      {!loading && calendar?.length > 0 && <CalendarGrid days={visibleDays} rows={visibleRows} todayNum={todayNum} tall={maximized} />}
+      {!loading && calendar?.length > 0 && (
+        <CalendarGrid days={visibleDays} rows={visibleRows} todayNum={todayNum} tall={maximized} mode={showFullMonth ? 'month' : 'week'} />
+      )}
     </>
   );
 
@@ -296,29 +298,33 @@ function OverviewTab() {
       <section className="grid-2col">
         <div className="panel">
           <div className="panel-head"><h2>Team roster</h2><span className="pill neutral">{team?.length || 0} people</span></div>
-          <div className="attendance-toolbar" style={{ padding: '0 18px 14px 18px', marginBottom: 0 }}>
+          <div className="team-roster-toolbar">
             <input
               type="text" className="team-search-input" placeholder="Search by name…"
               value={search} onChange={(e) => setSearch(e.target.value)}
             />
-            <div className="seg-control">
+            <div className="seg-control gapped">
               {STATUS_FILTERS.map((f) => (
                 <button key={f} className={'seg-btn' + (filter === f ? ' active' : '')} onClick={() => setFilter(f)}>{f}</button>
               ))}
             </div>
           </div>
           {!roster.length && <div className="panel-empty">No team members match this filter</div>}
-          {roster.map((m) => (
-            <div className="team-row" key={m.id}>
-              <div className="avatar-circle">{m.avatarInitials || '?'}</div>
-              <div className="team-meta">
-                <div className="name">{m.name}</div>
-                <div className="role">{m.jobTitle || ''}</div>
-              </div>
-              <div className="status-text"><span className={'status-dot ' + statusDotClass(m.status)} />{m.status}</div>
-              <div className="team-time">{m.clockInTime || '—'}</div>
+          {roster.length > 0 && (
+            <div className="team-roster-scroll scroll-polished">
+              {roster.map((m) => (
+                <div className="team-row" key={m.id}>
+                  <div className="avatar-circle">{m.avatarInitials || '?'}</div>
+                  <div className="team-meta">
+                    <div className="name">{m.name}</div>
+                    <div className="role">{m.jobTitle || ''}</div>
+                  </div>
+                  <div className="status-text"><span className={'status-dot ' + statusDotClass(m.status)} />{m.status}</div>
+                  <div className="team-time">{m.clockInTime || '—'}</div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
 
         <div>
@@ -447,7 +453,11 @@ export default function MyTeamPage() {
       {tab === 'Overview' && <OverviewTab />}
       {tab === 'Efforts / Punctuality' && <PunctualityTab />}
       {stubbed.includes(tab) && (
-        <div className="panel"><div className="panel-empty">{tab} is coming in a future update.</div></div>
+        <div className="panel stub-panel">
+          <div className="stub-panel-icon"><IconClock /></div>
+          <h2>{tab}</h2>
+          <p>This section is coming in a future update.</p>
+        </div>
       )}
     </section>
   );

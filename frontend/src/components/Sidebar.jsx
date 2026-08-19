@@ -11,7 +11,7 @@ import {
 
 function NavItem({ to, icon, children, badge }) {
   return (
-    <NavLink to={to} className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')}>
+    <NavLink to={to} className={({ isActive }) => 'nav-item' + (isActive ? ' active' : '')} title={children}>
       {icon}
       <span className="label">{children}</span>
       {badge > 0 && <span className="nav-badge">{badge}</span>}
@@ -21,7 +21,7 @@ function NavItem({ to, icon, children, badge }) {
 
 function InertNavItem({ icon, children }) {
   return (
-    <a className="nav-item" href="#" onClick={(e) => e.preventDefault()} style={{ opacity: 0.55, cursor: 'default' }}>
+    <a className="nav-item" href="#" onClick={(e) => e.preventDefault()} style={{ opacity: 0.55, cursor: 'default' }} title={children}>
       {icon}
       <span className="label">{children}</span>
     </a>

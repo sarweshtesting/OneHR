@@ -38,8 +38,14 @@
 .team-row:last-child { border-bottom: none; }
 .team-row .avatar-circle { width: 30px; height: 30px; font-size: 11px; }
 .team-meta { flex: 1; min-width: 0; }
-.team-meta .name { font-weight: 600; font-size: 13px; }
-.team-meta .role { font-size: 11.5px; color: var(--ink-faint); }
+.team-meta .name { font-weight: 600; font-size: 13px; overflow-wrap: break-word; }
+.team-meta .role { font-size: 11.5px; color: var(--ink-faint); overflow-wrap: break-word; line-height: 1.4; }
+
+.team-roster-toolbar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 14px 18px; }
+.team-roster-scroll { max-height: 292px; overflow: auto; }
+.seg-control.gapped { gap: 6px; background: transparent; border: none; padding: 0; }
+.seg-control.gapped .seg-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+.seg-control.gapped .seg-btn.active { background: var(--black); color: var(--white); border-color: var(--black); }
 .status-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: var(--ink-faint); }
 .status-dot.in { background: var(--red); }
 .status-dot.wfh { background: var(--ink); }
@@ -117,15 +123,18 @@
 
 .team-cal-scroll { overflow: auto; padding: 6px 18px 14px 18px; max-height: 268px; }
 .team-cal-scroll.tall { max-height: none; flex: 1; min-height: 0; }
-.team-cal-table { border-collapse: separate; border-spacing: 0; width: 100%; }
-.team-cal-table th { font-size: 10px; font-weight: 600; color: var(--ink-faint); font-family: var(--font-mono); padding: 8px 3px 6px 3px; min-width: 28px; text-align: center; background: var(--surface); position: sticky; top: 0; z-index: 2; }
+.team-cal-table { border-collapse: separate; border-spacing: 0; }
+.team-cal-table.week-mode { table-layout: fixed; width: 100%; }
+.team-cal-table.month-mode { table-layout: fixed; width: auto; }
+.team-cal-table.month-mode th:not(.team-cal-name), .team-cal-table.month-mode td:not(.team-cal-name) { width: 34px; }
+.team-cal-table th { font-size: 10px; font-weight: 600; color: var(--ink-faint); font-family: var(--font-mono); padding: 8px 3px 6px 3px; text-align: center; background: var(--surface); position: sticky; top: 0; z-index: 2; }
 .team-cal-dow { font-size: 8.5px; color: var(--ink-faint); text-transform: uppercase; margin-bottom: 2px; font-weight: 700; }
 .team-cal-table th.tc-weekend, .team-cal-table td.tc-weekend { background: var(--surface-alt); }
 .team-cal-table tbody tr:hover td { background: var(--surface-alt); }
 .team-cal-table tbody tr:hover td.tc-weekend { background: var(--surface-sunken); }
 .team-cal-table tbody tr { border-top: 1px solid var(--border); }
 .team-cal-name {
-  text-align: left; white-space: nowrap; padding: 8px 16px 8px 4px;
+  text-align: left; white-space: nowrap; padding: 8px 16px 8px 4px; width: 180px;
   position: sticky; left: 0; background: var(--surface); z-index: 1;
 }
 .team-cal-table th.team-cal-name { z-index: 3; }
