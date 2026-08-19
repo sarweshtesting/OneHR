@@ -10,5 +10,7 @@ public interface AttendanceRegularizationRequestRepository extends JpaRepository
     List<AttendanceRegularizationRequest> findByOrganizationIdAndUserIdInAndStatusOrderByCreatedAtAsc(
             UUID organizationId, List<UUID> userIds, RegularizationStatus status);
 
+    List<AttendanceRegularizationRequest> findByOrganizationIdAndUserIdOrderByCreatedAtDesc(UUID organizationId, UUID userId);
+
     Optional<AttendanceRegularizationRequest> findByIdAndOrganizationId(UUID id, UUID organizationId);
 }

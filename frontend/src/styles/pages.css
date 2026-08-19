@@ -97,13 +97,24 @@
   padding: 8px 12px; font-size: 12.5px; color: var(--ink); flex: 1; min-width: 180px;
 }
 
-.team-cal-scroll { overflow-x: auto; padding: 14px 18px; }
-.team-cal-table { border-collapse: separate; border-spacing: 0 6px; width: 100%; }
-.team-cal-table th { font-size: 10px; font-weight: 600; color: var(--ink-faint); font-family: var(--font-mono); padding: 0 3px 4px 3px; min-width: 24px; }
-.team-cal-name { text-align: left; white-space: nowrap; padding-right: 16px; }
+.team-cal-nav { display: flex; align-items: center; gap: 6px; }
+.team-cal-month { font-size: 12.5px; font-weight: 600; color: var(--ink); min-width: 108px; text-align: center; font-family: var(--font-mono); }
+
+.team-cal-scroll { overflow-x: auto; padding: 6px 18px 14px 18px; }
+.team-cal-table { border-collapse: separate; border-spacing: 0; width: 100%; }
+.team-cal-table th { font-size: 10px; font-weight: 600; color: var(--ink-faint); font-family: var(--font-mono); padding: 8px 3px 6px 3px; min-width: 28px; text-align: center; }
+.team-cal-dow { font-size: 8.5px; color: var(--ink-faint); text-transform: uppercase; margin-bottom: 2px; font-weight: 700; }
+.team-cal-table th.tc-weekend, .team-cal-table td.tc-weekend { background: var(--surface-alt); }
+.team-cal-table tbody tr:hover td { background: var(--surface-alt); }
+.team-cal-table tbody tr:hover td.tc-weekend { background: var(--surface-sunken); }
+.team-cal-table tbody tr { border-top: 1px solid var(--border); }
+.team-cal-name {
+  text-align: left; white-space: nowrap; padding: 8px 16px 8px 4px;
+  position: sticky; left: 0; background: var(--surface); z-index: 1;
+}
 .team-cal-name-inner { display: flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 600; }
 .team-cal-name .avatar-circle { width: 24px; height: 24px; font-size: 10px; }
-.tc-day { width: 23px; height: 23px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-family: var(--font-mono); color: var(--ink-faint); margin: 0 auto; }
+.tc-day { width: 23px; height: 23px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-family: var(--font-mono); color: var(--ink-faint); margin: 3px auto; }
 .tc-day.holiday { background: var(--green-soft); color: var(--green-dark); font-weight: 700; }
 .tc-day.weekly-off { background: var(--surface-sunken); color: var(--ink-soft); }
 .tc-day.on-leave { background: var(--red-soft); color: var(--red-dark); font-weight: 700; }
@@ -131,6 +142,11 @@
 .team-daily-bar-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; flex: 1; height: 100%; }
 .team-daily-bar { width: 12px; background: var(--red); border-radius: 3px 3px 0 0; min-height: 3px; }
 .team-daily-bar-label { font-size: 9.5px; color: var(--ink-faint); font-family: var(--font-mono); white-space: nowrap; }
+
+/* ---------- Today's timings ---------- */
+.tt-row { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 10px; }
+.tt-row span:last-child { color: var(--ink-faint); font-weight: 500; }
+.tt-label-row { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--ink-faint); margin-bottom: 5px; }
 
 /* ---------- Attendance ---------- */
 .attendance-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; flex-wrap: wrap; }

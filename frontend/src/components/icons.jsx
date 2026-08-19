@@ -96,3 +96,9 @@ export const IconPanelToggle = () => (
 export const IconPaperclip = () => (
   <svg {...base}><path d="M21 11.5 12.5 20a4.5 4.5 0 0 1-6.4-6.4l8-8a3 3 0 0 1 4.3 4.3l-7.6 7.6a1.5 1.5 0 0 1-2.1-2.1l6.9-6.9" /></svg>
 );
+export const IconHome = () => (
+  <svg {...base}><path d="M3 11 12 4l9 7" /><path d="M5 10v9h14v-9" /><path d="M9.5 19v-6h5v6" /></svg>
+);
+export const IconDocument = () => (
+  <svg {...base}><path d="M6 3h9l4 4v14H6z" /><path d="M15 3v4h4" /><path d="M9 12h6M9 16h6" /></svg>
+);

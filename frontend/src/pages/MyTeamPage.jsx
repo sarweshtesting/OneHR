@@ -1,6 +1,12 @@
 import { useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
 import AttentionPanel from '../components/overview/AttentionPanel';
+import { IconChevronDown } from '../components/icons';
+
+const CAL_STATUS_CLASS = {
+  HOLIDAY: 'holiday', WEEKLY_OFF: 'weekly-off', ON_LEAVE: 'on-leave', WFH_ON_DUTY: 'wfh', MISSING_ATTENDANCE: 'missing', PRESENT: '',
+};
+const WEEKDAY_LETTERS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 const TABS = ['Overview', 'Efforts / Punctuality', 'Negligence', 'Regularize & Cancel Penalties', 'Employee Assignments', 'Reports'];
 const STATUS_FILTERS = ['All', 'In', 'Out', 'Not in yet', 'On leave'];
@@ -40,11 +46,96 @@ function TeamMiniList({ items, empty }) {
   ));
 }
 
+function TeamCalendar() {
+  const [cursor, setCursor] = useState(() => new Date());
+  const { data: calendar, loading } = useApi('/api/team/calendar?month=' + monthKey(cursor));
+
+  const today = new Date();
+  const isCurrentMonth = today.getFullYear() === cursor.getFullYear() && today.getMonth() === cursor.getMonth();
+  const todayDate = isCurrentMonth ? today.getDate() : -1;
+  const monthLabel = cursor.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+
+  function shiftMonth(delta) {
+    setCursor((d) => new Date(d.getFullYear(), d.getMonth() + delta, 1));
+  }
+
+  return (
+    <div className="panel" style={{ marginBottom: 16 }}>
+      <div className="panel-head">
+        <h2>Team calendar</h2>
+        <div className="team-cal-nav">
+          <button type="button" className="panel-toggle" onClick={() => shiftMonth(-1)} aria-label="Previous month">
+            <span style={{ display: 'inline-flex', transform: 'rotate(90deg)' }}><IconChevronDown /></span>
+          </button>
+          <span className="team-cal-month">{monthLabel}</span>
+          <button type="button" className="panel-toggle" onClick={() => shiftMonth(1)} aria-label="Next month">
+            <span style={{ display: 'inline-flex', transform: 'rotate(-90deg)' }}><IconChevronDown /></span>
+          </button>
+          <span className="pill neutral">{calendar?.length || 0} people</span>
+        </div>
+      </div>
+
+      {loading && <div className="panel-empty">Loading…</div>}
+      {!loading && !calendar?.length && <div className="panel-empty">No direct reports to show</div>}
+      {!loading && calendar?.length > 0 && (
+        <>
+          <div className="team-cal-scroll">
+            <table className="team-cal-table">
+              <thead>
+                <tr>
+                  <th className="team-cal-name"></th>
+                  {calendar[0].days.map((d) => {
+                    const dow = new Date(d.date).getDay();
+                    return (
+                      <th key={d.date} className={dow === 0 || dow === 6 ? 'tc-weekend' : ''}>
+                        <div className="team-cal-dow">{WEEKDAY_LETTERS[dow]}</div>
+                        {new Date(d.date).getDate()}
+                      </th>
+                    );
+                  })}
+                </tr>
+              </thead>
+              <tbody>
+                {calendar.map((row) => (
+                  <tr key={row.userId}>
+                    <td className="team-cal-name">
+                      <div className="team-cal-name-inner">
+                        <div className="avatar-circle">{row.avatarInitials || '?'}</div>
+                        {row.userName}
+                      </div>
+                    </td>
+                    {row.days.map((d) => {
+                      const dayNum = new Date(d.date).getDate();
+                      const dow = new Date(d.date).getDay();
+                      const cls = CAL_STATUS_CLASS[d.status] || '';
+                      return (
+                        <td key={d.date} className={dow === 0 || dow === 6 ? 'tc-weekend' : ''}>
+                          <span className={'tc-day' + (cls ? ' ' + cls : '') + (dayNum === todayDate ? ' today' : '')}>{dayNum}</span>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="team-cal-legend">
+            <span className="team-cal-legend-item"><span className="team-cal-legend-dot holiday" />Holiday</span>
+            <span className="team-cal-legend-item"><span className="team-cal-legend-dot weekly-off" />Weekly off</span>
+            <span className="team-cal-legend-item"><span className="team-cal-legend-dot on-leave" />On leave</span>
+            <span className="team-cal-legend-item"><span className="team-cal-legend-dot wfh" />WFH / on duty</span>
+            <span className="team-cal-legend-item"><span className="team-cal-legend-dot missing" />Missing attendance</span>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function OverviewTab() {
   const { data: team } = useApi('/api/team/today-status');
   const { data: stats } = useApi('/api/team/stats');
   const { data: attention, reload: reloadAttention } = useApi('/api/team/attention');
-  const { data: calendar } = useApi('/api/team/calendar?month=' + monthKey(new Date()));
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('All');
@@ -57,8 +148,6 @@ function OverviewTab() {
       .filter((m) => matchesFilter(m.status, filter))
       .filter((m) => !search.trim() || m.name.toLowerCase().includes(search.trim().toLowerCase()));
   }, [team, filter, search]);
-
-  const today = new Date().getDate();
 
   return (
     <>
@@ -84,55 +173,7 @@ function OverviewTab() {
         </div>
       )}
 
-      <div className="panel" style={{ marginBottom: 16 }}>
-        <div className="panel-head"><h2>Team calendar</h2><span className="pill neutral">{calendar?.length || 0} people</span></div>
-        {!calendar?.length && <div className="panel-empty">No direct reports to show</div>}
-        {calendar?.length > 0 && (
-          <>
-            <div className="team-cal-scroll">
-              <table className="team-cal-table">
-                <thead>
-                  <tr>
-                    <th className="team-cal-name"></th>
-                    {calendar[0].days.map((d) => <th key={d.date}>{new Date(d.date).getDate()}</th>)}
-                  </tr>
-                </thead>
-                <tbody>
-                  {calendar.map((row) => (
-                    <tr key={row.userId}>
-                      <td className="team-cal-name">
-                        <div className="team-cal-name-inner">
-                          <div className="avatar-circle">{row.avatarInitials || '?'}</div>
-                          {row.userName}
-                        </div>
-                      </td>
-                      {row.days.map((d) => {
-                        const dayNum = new Date(d.date).getDate();
-                        const cls = {
-                          HOLIDAY: 'holiday', WEEKLY_OFF: 'weekly-off', ON_LEAVE: 'on-leave',
-                          WFH_ON_DUTY: 'wfh', MISSING_ATTENDANCE: 'missing', PRESENT: '',
-                        }[d.status] || '';
-                        return (
-                          <td key={d.date}>
-                            <span className={'tc-day' + (cls ? ' ' + cls : '') + (dayNum === today ? ' today' : '')}>{dayNum}</span>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="team-cal-legend">
-              <span className="team-cal-legend-item"><span className="team-cal-legend-dot holiday" />Holiday</span>
-              <span className="team-cal-legend-item"><span className="team-cal-legend-dot weekly-off" />Weekly off</span>
-              <span className="team-cal-legend-item"><span className="team-cal-legend-dot on-leave" />On leave</span>
-              <span className="team-cal-legend-item"><span className="team-cal-legend-dot wfh" />WFH / on duty</span>
-              <span className="team-cal-legend-item"><span className="team-cal-legend-dot missing" />Missing attendance</span>
-            </div>
-          </>
-        )}
-      </div>
+      <TeamCalendar />
 
       <section className="grid-2col">
         <div className="panel">

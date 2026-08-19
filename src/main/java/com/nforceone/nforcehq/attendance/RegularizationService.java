@@ -59,6 +59,15 @@ public class RegularizationService {
     }
 
     @Transactional(readOnly = true)
+    public List<RegularizationView> myRequests(JwtPrincipal principal) {
+        UUID organizationId = requireOrganization(principal);
+        return regularizationRepository.findByOrganizationIdAndUserIdOrderByCreatedAtDesc(organizationId, principal.userId())
+                .stream()
+                .map(r -> RegularizationView.from(r, principal.name()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<RegularizationView> pending(JwtPrincipal principal) {
         UUID organizationId = requireOrganization(principal);
         List<UUID> userIds = ApprovalScope.resolve(principal, userRepository, organizationId);
