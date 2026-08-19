@@ -9,8 +9,6 @@ import com.nforceone.nforcehq.security.JwtPrincipal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -27,42 +25,46 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Self-service CSV exports — always scoped to the requester's own data, regardless
- * of role, since these are personal timesheets rather than team/org reports. */
+/** Self-service exports — always scoped to the requester's own data, regardless of
+ * role, since these are personal timesheets rather than team/org reports. */
 @RestController
 @RequestMapping("/api/reports")
 @RequiredArgsConstructor
 public class ReportController {
 
-    private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneOffset.UTC);
-    private static final String[] HEADERS = {"Date", "Day", "Mode", "Clock In", "Clock Out", "Hours Worked", "Status", "Client Hours"};
-
     private final AttendanceRecordRepository attendanceRecordRepository;
     private final ClientLogRepository clientLogRepository;
+    private final ReportExportService reportExportService;
 
     @GetMapping("/monthly")
-    public ResponseEntity<byte[]> monthly(@AuthenticationPrincipal JwtPrincipal principal, @RequestParam String month) {
+    public ResponseEntity<byte[]> monthly(
+            @AuthenticationPrincipal JwtPrincipal principal,
+            @RequestParam String month,
+            @RequestParam(defaultValue = "csv") String format) {
         YearMonth ym;
         try {
             ym = YearMonth.parse(month);
         } catch (Exception ex) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "month must be in YYYY-MM format");
         }
-        return export(principal, ym.atDay(1), ym.atEndOfMonth(), "monthly-report-" + month + ".csv");
+        return export(principal, ym.atDay(1), ym.atEndOfMonth(), "Monthly report — " + month, "monthly-report-" + month, format);
     }
 
     @GetMapping("/weekly-timesheet")
-    public ResponseEntity<byte[]> weeklyTimesheet(@AuthenticationPrincipal JwtPrincipal principal, @RequestParam String weekStart) {
+    public ResponseEntity<byte[]> weeklyTimesheet(
+            @AuthenticationPrincipal JwtPrincipal principal,
+            @RequestParam String weekStart,
+            @RequestParam(defaultValue = "csv") String format) {
         LocalDate start;
         try {
             start = LocalDate.parse(weekStart);
         } catch (Exception ex) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "weekStart must be in YYYY-MM-DD format");
         }
-        return export(principal, start, start.plusDays(6), "weekly-timesheet-" + weekStart + ".csv");
+        return export(principal, start, start.plusDays(6), "Weekly timesheet — " + weekStart, "weekly-timesheet-" + weekStart, format);
     }
 
-    private ResponseEntity<byte[]> export(JwtPrincipal principal, LocalDate from, LocalDate to, String filename) {
+    private ResponseEntity<byte[]> export(JwtPrincipal principal, LocalDate from, LocalDate to, String title, String filenameBase, String format) {
         UUID organizationId = principal.effectiveOrganizationId();
         if (organizationId == null) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Select an organization first");
@@ -79,33 +81,50 @@ public class ReportController {
                 .stream()
                 .collect(Collectors.groupingBy(ClientLog::getWorkDate));
 
-        StringBuilder csv = new StringBuilder(String.join(",", HEADERS)).append('\n');
+        List<ReportRow> rows = new java.util.ArrayList<>();
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
             AttendanceRecord record = recordsByDate.get(date);
             List<ClientLog> logs = clientLogsByDate.getOrDefault(date, List.of());
             String clientHours = logs.stream()
                     .map(l -> l.getClientName() + ": " + String.format("%.2f", l.getLoggedHours().doubleValue()) + "h")
                     .collect(Collectors.joining("; "));
+            String day = date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY
+                    ? "Weekend" : date.getDayOfWeek().toString();
 
-            csv.append(date).append(',')
-                    .append(date.getDayOfWeek() == DayOfWeek.SUNDAY || date.getDayOfWeek() == DayOfWeek.SATURDAY ? "Weekend" : date.getDayOfWeek()).append(',')
-                    .append(record != null && record.getMode() != null ? record.getMode() : "").append(',')
-                    .append(record != null && record.getClockInAt() != null ? TIME_FMT.format(record.getClockInAt()) : "").append(',')
-                    .append(record != null && record.getClockOutAt() != null ? TIME_FMT.format(record.getClockOutAt()) : "").append(',')
-                    .append(record != null && record.getTotalWorkedMinutes() != null ? String.format("%.2f", record.getTotalWorkedMinutes() / 60.0) : "").append(',')
-                    .append(record != null ? record.getStatus() : "NO_RECORD").append(',')
-                    .append(escapeCsv(clientHours)).append('\n');
+            rows.add(new ReportRow(
+                    date, day,
+                    record != null ? (record.getMode() != null ? record.getMode().name() : null) : null,
+                    record != null ? record.getClockInAt() : null,
+                    record != null ? record.getClockOutAt() : null,
+                    record != null && record.getTotalWorkedMinutes() != null ? record.getTotalWorkedMinutes() / 60.0 : null,
+                    record != null ? record.getStatus().name() : "NO_RECORD",
+                    clientHours));
+        }
+
+        byte[] body;
+        MediaType contentType;
+        String extension;
+        switch (format.toLowerCase()) {
+            case "xlsx" -> {
+                body = reportExportService.toXlsx(rows, title.length() > 31 ? title.substring(0, 31) : title);
+                contentType = MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+                extension = "xlsx";
+            }
+            case "pdf" -> {
+                body = reportExportService.toPdf(rows, title);
+                contentType = MediaType.APPLICATION_PDF;
+                extension = "pdf";
+            }
+            case "csv" -> {
+                body = reportExportService.toCsv(rows);
+                contentType = MediaType.parseMediaType("text/csv");
+                extension = "csv";
+            }
+            default -> throw new ApiException(HttpStatus.BAD_REQUEST, "Unsupported export format: " + format);
         }
 
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentDisposition(ContentDisposition.attachment().filename(filename).build());
-        return ResponseEntity.ok().headers(headers).contentType(MediaType.parseMediaType("text/csv")).body(csv.toString().getBytes());
-    }
-
-    private static String escapeCsv(String value) {
-        if (value.contains(",") || value.contains("\"")) {
-            return "\"" + value.replace("\"", "\"\"") + "\"";
-        }
-        return value;
+        headers.setContentDisposition(ContentDisposition.attachment().filename(filenameBase + "." + extension).build());
+        return ResponseEntity.ok().headers(headers).contentType(contentType).body(body);
     }
 }

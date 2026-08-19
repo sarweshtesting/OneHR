@@ -59,18 +59,20 @@ export default function AttendancePage() {
     }
   }
 
-  function downloadMonthlyReport() {
-    downloadReport(`/api/reports/monthly?month=${month}`, `monthly-report-${month}.csv`);
-  }
-
-  function downloadWeeklyTimesheet() {
+  const currentWeekStart = (() => {
     const today = new Date();
     const day = today.getDay();
-    const mondayOffset = day === 0 ? -6 : 1 - day;
     const monday = new Date(today);
-    monday.setDate(today.getDate() + mondayOffset);
-    const weekStart = monday.toISOString().slice(0, 10);
-    downloadReport(`/api/reports/weekly-timesheet?weekStart=${weekStart}`, `weekly-timesheet-${weekStart}.csv`);
+    monday.setDate(today.getDate() + (day === 0 ? -6 : 1 - day));
+    return monday.toISOString().slice(0, 10);
+  })();
+
+  function downloadMonthlyReport(format) {
+    downloadReport(`/api/reports/monthly?month=${month}&format=${format}`, `monthly-report-${month}.${format}`);
+  }
+
+  function downloadWeeklyTimesheet(format) {
+    downloadReport(`/api/reports/weekly-timesheet?weekStart=${currentWeekStart}&format=${format}`, `weekly-timesheet-${currentWeekStart}.${format}`);
   }
 
   return (
@@ -83,14 +85,26 @@ export default function AttendancePage() {
         <div className="date">{MONTH_NAMES[new Date().getMonth()]} {new Date().getFullYear()}</div>
       </div>
 
-      <div className="panel" style={{ padding: '14px 18px', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: 13.5 }}>My reports</div>
-          <div style={{ fontSize: 12, color: 'var(--ink-faint)' }}>Your own attendance and client hours, ready to download</div>
+      <div className="panel" style={{ padding: '14px 18px', marginBottom: 16 }}>
+        <div style={{ fontWeight: 700, fontSize: 13.5, marginBottom: 2 }}>My reports</div>
+        <div style={{ fontSize: 12, color: 'var(--ink-faint)', marginBottom: 12 }}>Your own attendance and client hours, ready to download</div>
+        <div className="my-reports-row">
+          <span>Weekly timesheet</span>
+          <div className="export-links">
+            <span>Export:</span>
+            <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); downloadWeeklyTimesheet('csv'); }}>CSV</a>
+            <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); downloadWeeklyTimesheet('xlsx'); }}>Excel</a>
+            <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); downloadWeeklyTimesheet('pdf'); }}>PDF</a>
+          </div>
         </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button type="button" className="btn-mini" onClick={downloadWeeklyTimesheet}>Weekly timesheet (CSV)</button>
-          <button type="button" className="btn-mini" onClick={downloadMonthlyReport}>Monthly report (CSV)</button>
+        <div className="my-reports-row">
+          <span>Monthly report</span>
+          <div className="export-links">
+            <span>Export:</span>
+            <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); downloadMonthlyReport('csv'); }}>CSV</a>
+            <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); downloadMonthlyReport('xlsx'); }}>Excel</a>
+            <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); downloadMonthlyReport('pdf'); }}>PDF</a>
+          </div>
         </div>
       </div>
 

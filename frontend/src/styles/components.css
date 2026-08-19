@@ -7,6 +7,8 @@
 .export-links a { padding: 3px 8px; border-radius: 20px; border: 1px solid var(--border); }
 .export-links a:hover { background: var(--surface-alt); border-color: var(--border-strong); }
 .panel-empty { padding: 14px 18px; color: var(--ink-faint); font-size: 12.5px; }
+.my-reports-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--border); font-size: 13px; font-weight: 600; flex-wrap: wrap; gap: 8px; }
+.my-reports-row:first-of-type { border-top: none; padding-top: 0; }
 
 .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 22px; }
 .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; }
