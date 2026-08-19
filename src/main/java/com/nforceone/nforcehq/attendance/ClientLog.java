@@ -22,6 +22,9 @@ public class ClientLog extends TenantAwareEntity {
     @Column(name = "work_date", nullable = false)
     private LocalDate workDate;
 
+    @Column(name = "client_id")
+    private UUID clientId;
+
     @Column(name = "client_name")
     private String clientName;
 

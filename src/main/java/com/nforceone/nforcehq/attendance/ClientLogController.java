@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ClientLogController {
 
     private final ClientLogRepository clientLogRepository;
+    private final ClientRepository clientRepository;
     private final UserRepository userRepository;
 
     @PostMapping
@@ -37,16 +38,49 @@ public class ClientLogController {
         User self = userRepository.findById(principal.userId())
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "User not found"));
 
+        Client client = resolveClient(organizationId, request);
+
         ClientLog log = new ClientLog();
         log.setOrganizationId(organizationId);
         log.setUserId(principal.userId());
         log.setWorkDate(request.workDate());
-        log.setClientName(request.clientName().trim());
+        log.setClientId(client.getId());
+        log.setClientName(client.getName());
         log.setLoggedHours(request.loggedHours());
         log.setSource("MANUAL");
         clientLogRepository.save(log);
 
         return toView(log, self);
+    }
+
+    /** Either resolves the given clientId to an existing client, or creates one from
+     * the inline newClientName/newClientContact/newClientNotes fields. */
+    private Client resolveClient(UUID organizationId, SubmitClientLogRequest request) {
+        if (request.clientId() != null) {
+            Client client = clientRepository.findById(request.clientId())
+                    .orElseThrow(() -> new ApiException(HttpStatus.BAD_REQUEST, "Unknown client"));
+            if (!client.getOrganizationId().equals(organizationId)) {
+                throw new ApiException(HttpStatus.BAD_REQUEST, "Unknown client");
+            }
+            return client;
+        }
+        if (request.newClientName() == null || request.newClientName().isBlank()) {
+            throw new ApiException(HttpStatus.BAD_REQUEST, "Select a client or enter a new client's name");
+        }
+        String name = request.newClientName().trim();
+        return clientRepository.findByOrganizationIdAndNameIgnoreCase(organizationId, name)
+                .orElseGet(() -> {
+                    Client client = new Client();
+                    client.setOrganizationId(organizationId);
+                    client.setName(name);
+                    client.setContactPerson(blankToNull(request.newClientContact()));
+                    client.setNotes(blankToNull(request.newClientNotes()));
+                    return clientRepository.save(client);
+                });
+    }
+
+    private static String blankToNull(String value) {
+        return (value == null || value.isBlank()) ? null : value.trim();
     }
 
     @GetMapping("/me")
