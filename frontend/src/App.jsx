@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import ProtectedRoute from './components/ProtectedRoute';
 import RequireFinanceAccess from './components/RequireFinanceAccess';
 import RequireManagePeopleAccess from './components/RequireManagePeopleAccess';
+import RequireManagerAccess from './components/RequireManagerAccess';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -22,6 +23,8 @@ import PayslipsPage from './pages/PayslipsPage';
 import ClientTrackingPage from './pages/ClientTrackingPage';
 import AdminPage from './pages/AdminPage';
 import AuditLogPage from './pages/AuditLogPage';
+import ExceptionDashboardPage from './pages/ExceptionDashboardPage';
+import ServiceRequestsPage from './pages/ServiceRequestsPage';
 
 export default function App() {
   return (
@@ -42,6 +45,10 @@ export default function App() {
           <Route path="/people" element={<PeoplePage />} />
           <Route path="/payslips" element={<PayslipsPage />} />
           <Route path="/client-tracking" element={<ClientTrackingPage />} />
+          <Route element={<RequireManagerAccess />}>
+            <Route path="/exceptions" element={<ExceptionDashboardPage />} />
+          </Route>
+          <Route path="/service-requests" element={<ServiceRequestsPage />} />
           <Route element={<RequireFinanceAccess />}>
             <Route path="/finance" element={<FinanceChatPage />} />
           </Route>

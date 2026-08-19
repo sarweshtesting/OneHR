@@ -7,7 +7,7 @@ import {
   IconGrid, IconClock, IconCalendar, IconOrgChart, IconPeople,
   IconPayroll, IconClientTracking, IconAdmin, IconAuditLog, IconChat,
   IconCalendarDays, IconStar, IconChevronDown, IconPanelToggle,
-  IconSun, IconMoon, IconAuto,
+  IconSun, IconMoon, IconAuto, IconWarningTriangle, IconHelp,
 } from './icons';
 
 const THEME_OPTIONS = [
@@ -61,7 +61,7 @@ function NavGroup({ label, icon, children }) {
 }
 
 export default function Sidebar() {
-  const { user, canAccessFinance, canManagePeople } = useAuth();
+  const { user, canAccessFinance, canManagePeople, isManager } = useAuth();
   const { theme, setTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem('nexora_sidebar_collapsed') === '1');
 
@@ -99,6 +99,9 @@ export default function Sidebar() {
 
         <NavGroup label="Operations" icon={<IconClock />}>
           <NavItem to="/attendance" icon={<IconClock />}>Attendance</NavItem>
+          {isManager
+            ? <NavItem to="/exceptions" icon={<IconWarningTriangle />}>Exceptions</NavItem>
+            : <InertNavItem icon={<IconWarningTriangle />}>Exceptions</InertNavItem>}
         </NavGroup>
 
         <NavGroup label="Finance &amp; Ops" icon={<IconPayroll />}>
@@ -110,6 +113,7 @@ export default function Sidebar() {
         </NavGroup>
 
         <NavGroup label="Governance" icon={<IconAdmin />}>
+          <NavItem to="/service-requests" icon={<IconHelp />}>Service Requests</NavItem>
           {canManagePeople
             ? <NavItem to="/admin" icon={<IconAdmin />}>Admin</NavItem>
             : <InertNavItem icon={<IconAdmin />}>Admin</InertNavItem>}
