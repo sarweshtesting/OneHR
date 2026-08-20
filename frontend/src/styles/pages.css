@@ -186,6 +186,7 @@
 .lb-col-pct { font-weight: 700; color: var(--ink); }
 .lb-col-num { color: var(--ink-soft); }
 .team-lb-scroll { max-height: 268px; overflow: auto; }
+.negligence-cols { grid-template-columns: minmax(160px, 260px) 90px 150px 110px 80px; }
 .team-lb-row { padding: 12px 18px; border-bottom: 1px solid var(--border); }
 .team-lb-row:last-child { border-bottom: none; }
 .team-lb-meta { display: flex; align-items: center; gap: 10px; min-width: 0; }

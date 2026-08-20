@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useApi } from '../hooks/useApi';
+import { apiFetch, apiFetchBlob } from '../api/client';
 import AttentionPanel from '../components/overview/AttentionPanel';
 import {
   IconChevronDown, IconCheck, IconClock, IconHome, IconClockIn,
@@ -426,9 +427,182 @@ function PunctualityTab() {
   );
 }
 
+function NegligenceTab() {
+  const today = new Date();
+  const defaultEnd = today.toISOString().slice(0, 10);
+  const defaultStart = new Date(today.getTime() - 29 * 86400000).toISOString().slice(0, 10);
+  const [start, setStart] = useState(defaultStart);
+  const [end, setEnd] = useState(defaultEnd);
+  const { data } = useApi(`/api/team/negligence?start=${start}&end=${end}`);
+
+  return (
+    <div className="panel">
+      <div className="panel-head">
+        <h2>Negligence tracker</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <input type="date" value={start} onChange={(e) => setStart(e.target.value)} />
+          <span style={{ color: 'var(--ink-faint)' }}>–</span>
+          <input type="date" value={end} onChange={(e) => setEnd(e.target.value)} />
+        </div>
+      </div>
+
+      {!data?.length && <div className="panel-empty">No incidents for this range — your team is clean.</div>}
+      {data?.length > 0 && (
+        <>
+          <div className="team-lb-head-row negligence-cols">
+            <span>Employee</span>
+            <span className="lb-col-num">Late</span>
+            <span className="lb-col-num">Missed clock-out</span>
+            <span className="lb-col-num">Mismatches</span>
+            <span className="lb-col-num">Total</span>
+          </div>
+          <div className="team-lb-scroll scroll-polished">
+            {data.map((p) => (
+              <div className="team-lb-row negligence-cols" key={p.userId}>
+                <div className="team-lb-meta">
+                  <div className="avatar-circle">{p.avatarInitials || '?'}</div>
+                  <div className="team-lb-meta-text">
+                    <div className="name">{p.userName}</div>
+                    <div className="title">{p.jobTitle || ''}</div>
+                  </div>
+                </div>
+                <div className="lb-col-num">{p.lateCount}</div>
+                <div className="lb-col-num">{p.missedClockoutCount}</div>
+                <div className="lb-col-num">{p.mismatchCount}</div>
+                <div className="lb-col-num"><span className={'pill' + (p.totalIncidents > 0 ? ' accent' : ' neutral')}>{p.totalIncidents}</span></div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function RegularizeCancelTab() {
+  const { data, reload } = useApi('/api/team/regularizations');
+  const [busyId, setBusyId] = useState(null);
+
+  async function act(id, action) {
+    setBusyId(id);
+    try {
+      await apiFetch(`/api/regularizations/${id}/${action}`, { method: 'POST' });
+      await reload();
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  return (
+    <div className="panel">
+      <div className="panel-head"><h2>Regularize &amp; cancel penalties</h2><span className="pill neutral">{data?.length || 0} pending</span></div>
+      <table className="data-table">
+        <thead><tr><th>Date</th><th>Requester</th><th>Requested clock in</th><th>Requested clock out</th><th>Reason</th><th>Actions</th></tr></thead>
+        <tbody>
+          {!data?.length && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--ink-faint)' }}>Nothing pending — no penalties to review</td></tr>}
+          {data?.map((r) => (
+            <tr key={r.id}>
+              <td className="mono">{r.workDate}</td>
+              <td>{r.userName}</td>
+              <td className="mono">{r.requestedClockIn ? new Date(r.requestedClockIn).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+              <td className="mono">{r.requestedClockOut ? new Date(r.requestedClockOut).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }) : '—'}</td>
+              <td>{r.reason || '—'}</td>
+              <td>
+                <button type="button" className="btn-mini primary" disabled={busyId === r.id} onClick={() => act(r.id, 'approve')} style={{ marginRight: 6 }}>Regularize</button>
+                <button type="button" className="btn-mini" disabled={busyId === r.id} onClick={() => act(r.id, 'reject')}>Cancel</button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function AssignmentsTab() {
+  const { data } = useApi('/api/team/assignments');
+
+  return (
+    <div className="panel">
+      <div className="panel-head"><h2>Employee assignments</h2><span className="pill neutral">{data?.length || 0} people</span></div>
+      <table className="data-table">
+        <thead><tr><th>Employee</th><th>Department</th><th>Job title</th><th>Email</th></tr></thead>
+        <tbody>
+          {!data?.length && <tr><td colSpan={4} style={{ textAlign: 'center', color: 'var(--ink-faint)' }}>No direct reports to show</td></tr>}
+          {data?.map((a) => (
+            <tr key={a.userId}>
+              <td>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <div className="avatar-circle">{a.avatarInitials || '?'}</div>
+                  {a.userName}
+                </div>
+              </td>
+              <td>{a.departmentName || 'Unassigned'}</td>
+              <td>{a.jobTitle || '—'}</td>
+              <td className="mono">{a.email || '—'}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function ReportsTab() {
+  const month = toIsoDate(new Date()).slice(0, 7);
+  const currentWeekStart = (() => {
+    const now = new Date();
+    const day = now.getDay();
+    const monday = new Date(now);
+    monday.setDate(now.getDate() + (day === 0 ? -6 : 1 - day));
+    return toIsoDate(monday);
+  })();
+
+  async function download(path, filename) {
+    try {
+      const blob = await apiFetchBlob(path);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  return (
+    <div className="panel">
+      <div className="panel-head"><h2>Team reports</h2></div>
+      <div style={{ padding: '14px 18px 2px 18px', fontSize: 12, color: 'var(--ink-faint)' }}>
+        Attendance exports covering all of your direct reports at once.
+      </div>
+      <div className="my-reports-row">
+        <span>Team weekly timesheet</span>
+        <div className="export-links">
+          <span>Export:</span>
+          <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); download(`/api/team/reports/weekly-timesheet?weekStart=${currentWeekStart}&format=csv`, `team-weekly-timesheet-${currentWeekStart}.csv`); }}>CSV</a>
+          <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); download(`/api/team/reports/weekly-timesheet?weekStart=${currentWeekStart}&format=xlsx`, `team-weekly-timesheet-${currentWeekStart}.xlsx`); }}>Excel</a>
+          <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); download(`/api/team/reports/weekly-timesheet?weekStart=${currentWeekStart}&format=pdf`, `team-weekly-timesheet-${currentWeekStart}.pdf`); }}>PDF</a>
+        </div>
+      </div>
+      <div className="my-reports-row">
+        <span>Team monthly report</span>
+        <div className="export-links">
+          <span>Export:</span>
+          <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); download(`/api/team/reports/monthly?month=${month}&format=csv`, `team-monthly-report-${month}.csv`); }}>CSV</a>
+          <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); download(`/api/team/reports/monthly?month=${month}&format=xlsx`, `team-monthly-report-${month}.xlsx`); }}>Excel</a>
+          <a className="see-all" href="#" onClick={(e) => { e.preventDefault(); download(`/api/team/reports/monthly?month=${month}&format=pdf`, `team-monthly-report-${month}.pdf`); }}>PDF</a>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function MyTeamPage() {
   const [tab, setTab] = useState('Overview');
-  const stubbed = ['Negligence', 'Regularize & Cancel Penalties', 'Employee Assignments', 'Reports'];
 
   return (
     <section>
@@ -455,13 +629,10 @@ export default function MyTeamPage() {
 
       {tab === 'Overview' && <OverviewTab />}
       {tab === 'Efforts / Punctuality' && <PunctualityTab />}
-      {stubbed.includes(tab) && (
-        <div className="panel stub-panel">
-          <div className="stub-panel-icon"><IconClock /></div>
-          <h2>{tab}</h2>
-          <p>This section is coming in a future update.</p>
-        </div>
-      )}
+      {tab === 'Negligence' && <NegligenceTab />}
+      {tab === 'Regularize & Cancel Penalties' && <RegularizeCancelTab />}
+      {tab === 'Employee Assignments' && <AssignmentsTab />}
+      {tab === 'Reports' && <ReportsTab />}
     </section>
   );
 }

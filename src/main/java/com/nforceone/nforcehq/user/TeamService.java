@@ -5,19 +5,26 @@ import com.nforceone.nforcehq.attendance.AttendanceRecord;
 import com.nforceone.nforcehq.attendance.AttendanceRecordRepository;
 import com.nforceone.nforcehq.attendance.AttendanceSource;
 import com.nforceone.nforcehq.attendance.AttendanceStatus;
+import com.nforceone.nforcehq.attendance.MismatchService;
+import com.nforceone.nforcehq.attendance.RegularizationService;
+import com.nforceone.nforcehq.attendance.RegularizationView;
 import com.nforceone.nforcehq.common.ApiException;
 import com.nforceone.nforcehq.dashboard.ApprovalItem;
 import com.nforceone.nforcehq.dashboard.ApprovalsService;
 import com.nforceone.nforcehq.leave.LeaveRequest;
 import com.nforceone.nforcehq.leave.LeaveRequestRepository;
 import com.nforceone.nforcehq.leave.LeaveRequestStatus;
+import com.nforceone.nforcehq.org.Department;
+import com.nforceone.nforcehq.org.DepartmentRepository;
 import com.nforceone.nforcehq.org.Holiday;
 import com.nforceone.nforcehq.org.HolidayRepository;
+import com.nforceone.nforcehq.reports.TeamReportRow;
 import com.nforceone.nforcehq.security.JwtPrincipal;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +49,10 @@ public class TeamService {
     private final AttendanceRecordRepository attendanceRecordRepository;
     private final LeaveRequestRepository leaveRequestRepository;
     private final HolidayRepository holidayRepository;
+    private final DepartmentRepository departmentRepository;
     private final ApprovalsService approvalsService;
+    private final MismatchService mismatchService;
+    private final RegularizationService regularizationService;
 
     public TeamStats stats(JwtPrincipal principal) {
         UUID organizationId = requireOrganization(principal);
@@ -171,6 +181,82 @@ public class TeamService {
         int max = dailyCounts.isEmpty() ? 0 : dailyCounts.stream().mapToInt(DailyOnTimeCount::onTimeCount).max().orElse(0);
 
         return new TeamPunctualityResponse(avg, min, max, leaderboard, dailyCounts);
+    }
+
+    public List<NegligenceEntry> negligence(JwtPrincipal principal, LocalDate start, LocalDate end) {
+        UUID organizationId = requireOrganization(principal);
+        List<User> reports = userRepository.findByManagerIdAndOrganizationId(principal.userId(), organizationId);
+        if (reports.isEmpty()) {
+            return List.of();
+        }
+        List<UUID> userIds = reports.stream().map(User::getId).toList();
+        LocalDate today = LocalDate.now();
+
+        List<AttendanceRecord> records = attendanceRecordRepository
+                .findByOrganizationIdAndUserIdInAndWorkDateBetweenOrderByWorkDateDesc(organizationId, userIds, start, end);
+
+        Map<UUID, Integer> lateCounts = new HashMap<>();
+        Map<UUID, Integer> missedCounts = new HashMap<>();
+        for (AttendanceRecord r : records) {
+            if (r.getStatus() == AttendanceStatus.LATE) {
+                lateCounts.merge(r.getUserId(), 1, Integer::sum);
+            }
+            if (r.getClockInAt() != null && r.getClockOutAt() == null && r.getWorkDate().isBefore(today)) {
+                missedCounts.merge(r.getUserId(), 1, Integer::sum);
+            }
+        }
+
+        Map<UUID, Integer> mismatchCounts = new HashMap<>();
+        mismatchService.openMismatchesFor(organizationId, userIds).stream()
+                .filter(m -> !m.workDate().isBefore(start) && !m.workDate().isAfter(end))
+                .forEach(m -> mismatchCounts.merge(m.userId(), 1, Integer::sum));
+
+        return reports.stream().map(user -> {
+            int late = lateCounts.getOrDefault(user.getId(), 0);
+            int missed = missedCounts.getOrDefault(user.getId(), 0);
+            int mismatch = mismatchCounts.getOrDefault(user.getId(), 0);
+            return new NegligenceEntry(user.getId(), user.getFullName(), user.getJobTitle(), user.getAvatarInitials(),
+                    late, missed, mismatch, late + missed + mismatch);
+        }).sorted((a, b) -> Integer.compare(b.totalIncidents(), a.totalIncidents())).toList();
+    }
+
+    public List<RegularizationView> regularizations(JwtPrincipal principal) {
+        UUID organizationId = requireOrganization(principal);
+        List<UUID> reportIds = directReportIds(principal, organizationId);
+        return regularizationService.pendingFor(organizationId, reportIds);
+    }
+
+    public List<AssignmentEntry> assignments(JwtPrincipal principal) {
+        UUID organizationId = requireOrganization(principal);
+        List<User> reports = userRepository.findByManagerIdAndOrganizationId(principal.userId(), organizationId);
+        Map<UUID, String> deptNames = departmentRepository.findByOrganizationId(organizationId).stream()
+                .collect(java.util.stream.Collectors.toMap(Department::getId, Department::getName));
+        return reports.stream()
+                .map(u -> new AssignmentEntry(u.getId(), u.getFullName(), u.getAvatarInitials(), u.getJobTitle(),
+                        u.getDepartmentId() != null ? deptNames.get(u.getDepartmentId()) : null, u.getEmail()))
+                .toList();
+    }
+
+    public List<TeamReportRow> reportRows(JwtPrincipal principal, LocalDate start, LocalDate end) {
+        UUID organizationId = requireOrganization(principal);
+        List<User> reports = userRepository.findByManagerIdAndOrganizationId(principal.userId(), organizationId);
+        if (reports.isEmpty()) {
+            return List.of();
+        }
+        List<UUID> userIds = reports.stream().map(User::getId).toList();
+        Map<UUID, String> namesById = reports.stream()
+                .collect(java.util.stream.Collectors.toMap(User::getId, User::getFullName));
+
+        List<AttendanceRecord> records = attendanceRecordRepository
+                .findByOrganizationIdAndUserIdInAndWorkDateBetweenOrderByWorkDateDesc(organizationId, userIds, start, end);
+
+        return records.stream().map(r -> {
+            String day = r.getWorkDate().getDayOfWeek() == DayOfWeek.SUNDAY || r.getWorkDate().getDayOfWeek() == DayOfWeek.SATURDAY
+                    ? "Weekend" : r.getWorkDate().getDayOfWeek().toString();
+            return new TeamReportRow(r.getWorkDate(), namesById.getOrDefault(r.getUserId(), "Unknown"), day,
+                    r.getMode() != null ? r.getMode().name() : null, r.getClockInAt(), r.getClockOutAt(),
+                    r.getTotalWorkedMinutes() != null ? r.getTotalWorkedMinutes() / 60.0 : null, r.getStatus().name());
+        }).sorted(Comparator.comparing(TeamReportRow::date).reversed().thenComparing(TeamReportRow::employeeName)).toList();
     }
 
     private List<UUID> directReportIds(JwtPrincipal principal, UUID organizationId) {
